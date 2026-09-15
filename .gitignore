@@ -1,7 +1,0 @@
-out/
-build/
-target/
-*.class
-*.log
-.idea/
-.vscode/

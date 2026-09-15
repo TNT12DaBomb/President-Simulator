@@ -1,0 +1,50 @@
+PRESIDENTIAL SIMULATOR
+Campaign Events Edition
+
+WINDOWS: START PLAYING
+
+1. Extract the entire ZIP. Do not run the game from inside the ZIP viewer.
+2. Open the campaign-events folder.
+3. Double-click run-windows.bat.
+4. Type 1, then press Enter to start a new campaign.
+
+You only need Java 17 or newer to play the included campaign.jar.
+No code editor, Git, Python, internet connection, or terminal commands are
+needed to play.
+
+INSIDE THE GAME
+
+Type the number beside the option you want, then press Enter.
+Use S in the state list to search by state name.
+Use 0 on a detail screen to go back.
+Read the confirmation before spending a turn or accepting an event offer.
+Progress saves after each accepted action and event response.
+Choose Resume saved campaign the next time you open the game.
+
+There is one save slot: saves/campaign.save, inside this folder.
+Starting a new campaign asks before replacing that save.
+Extract to a folder you can write to; keep the folder together.
+
+MAC / LINUX
+
+Open a terminal in this folder and run:
+  sh run.sh
+
+IF YOU EDIT THE SOURCE
+
+There are now 14 Java source files. Keep all of them together.
+On Windows, run build-windows.bat, then run-windows.bat.
+On Mac/Linux, run sh build.sh, then sh run.sh.
+Building requires a JDK 17 or newer. Playing the included JAR only needs
+a Java 17+ runtime. The launcher prefers the JAR, so rebuild after edits.
+
+WHAT IS INCLUDED
+
+16 campaign turns, an active opponent, 36 fictional random events,
+optional event responses, temporary effects, a campaign journal,
+save/resume, and an optional graphical results window.
+
+The campaign itself is text-based. The code separates game rules from the
+interface so a full GUI can use the same engine later.
+
+Read README.md for the rules and ARCHITECTURE.md for developer details.

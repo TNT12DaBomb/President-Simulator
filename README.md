@@ -1,214 +1,104 @@
-# Presidential Simulator
+# Presidential Simulator — Campaign Events Edition
 
-A political strategy game about earning office, governing under pressure, and deciding what legacy to leave.
+A text-based campaign game with 36 fictional events, a working opponent, and a UI-independent Java engine. This release builds on the six-class objective-based revision you supplied. The underlying state objectives are invented game rules, not real political data or election forecasts.
 
-Started as a passion project for a friend, Presidential Simulator is intended to grow from a Java prototype into a replayable, open-source game. The first milestone is a complete text adventure with consequential choices, inspired by the pacing of *The Oregon Trail*. The longer-term direction is an original map-driven interface with the strategic readability of *Plague Inc.*
+## Start playing
 
-**Status: early prototype.** This package documents the supplied code and a proposed development direction. It is not a finished game or a published release. No ads, account system, save system, or governing phase exist yet. Open-source licensing is proposed and must be finalized before publication; see [licensing and revenue](docs/LICENSING_AND_REVENUE.md).
+**Windows:** extract the full ZIP, open `campaign-events`, and double-click `run-windows.bat`. Choose a menu number and press Enter. Read `START-HERE.txt` if you are new to the game.
 
-## Contents
+**Mac/Linux:** run `sh run.sh` from the extracted folder.
 
-- [What works today](#what-works-today)
-- [Run the current prototype](#run-the-current-prototype)
-- [Known limitations](#known-limitations)
-- [Game vision](#game-vision)
-- [First complete text release](#first-complete-text-release)
-- [Future customization and governing](#future-customization-and-governing)
-- [Architecture](#architecture)
-- [Roadmap](#roadmap)
-- [Feedback and contributions](#feedback-and-contributions)
-- [Licensing and revenue](#licensing-and-revenue)
+The included `campaign.jar` needs a Java 17+ runtime, with no external dependencies. A JDK is needed only to rebuild edited source. The launcher prefers the JAR; after editing any Java file, run `build-windows.bat` or `sh build.sh` to include your changes.
 
-## What works today
+## What's new
 
-The current program asks for a difficulty, a running mate, and one campaign focus; it then runs an election and opens a Swing results window.
+- **36 events:** funding gains/losses, volunteer work, reopened objectives, cost changes, fundraising changes, optional offers, and quiet weeks.
+- **Both campaigns matter:** the opponent has its own money and completed objectives. It acts after every second player turn and can be helped or hurt by events.
+- **16 turns:** expanded from eight to give event choices and temporary effects room to matter.
+- **Guided interface:** welcome screen, short briefing, compact dashboard, seven-state pages, search, state detail, confirmations, and readable recaps.
+- **Save/resume:** autosave after every accepted action and event response, including unanswered offers. Reloading replays the exact accepted decisions with the same random sequence.
+- **GUI-ready rules:** commands enter `GameEngine`; immutable `GameView` snapshots and `TurnReport` messages come out. `TextUI` renders them without owning gameplay rules.
+- **Results:** console details, journal, and the existing optional Swing results window.
 
-| Component | Current implementation |
-| --- | --- |
-| Entry point | `PresidentialSimulator` coordinates console input and election results. |
-| Player data | `President` stores nine mutable attributes, including approval, economy, trust, treasury, and health. |
-| Running mate | Four choices apply fixed attribute changes. |
-| Campaign | One of three choices applies fixed attribute changes. |
-| State data | `State` stores name, electoral votes, and political leaning. Every supplied leaning is zero. |
-| Election calculation | `ElectoralCollege` calculates outcomes for 50 states and D.C. using player attributes and randomness. |
-| Result data | `ElectionResult` defensively copies the state result map and exposes an unmodifiable view. |
-| Results UI | `ElectionGUI` shows colored state cards and electoral totals. It is a grid, not a geographic map. |
-| Data validation | The constructor checks the state electoral total and the total including D.C. |
+## Play loop
 
-These descriptions come from inspection of the six supplied Java files. See the [code review](docs/CODE_REVIEW.md) for defects and verification limits.
+1. Pick a difficulty and running mate.
+2. Inspect a state and choose one unfinished objective, or fundraise.
+3. Confirm the turn and any cost. Unavailable actions explain why they cannot run.
+4. Read the recap: your action, the opponent's action when scheduled, and the random event.
+5. Respond to an offer if one appears. This does not consume another turn.
+6. Continue through turn 16, then inspect the final result and journal.
 
-## Run the current prototype
+Browsing, searching, help, invalid input, and cancelled actions are free. An event response must be resolved before another turn or the final election can proceed. Passing a turn still allows the opponent and event steps to happen.
 
-### Requirements
+## Board rules
 
-- A Java Development Kit; JDK 17 is the proposed baseline to verify.
-- A desktop environment for the Swing window.
-- A terminal or IDE able to provide standard input.
+The supplied electoral-vote roster is retained: 50 states plus D.C., totalling 538, with 270 required to win. The fictional starting allocation is 186 EV for the player and 352 for the opponent, using the supplied alphabetical starting-bloc rule.
 
-The package uses only Java standard-library imports. No Maven or Gradle build is included yet. Source files in this package have been renamed to match their public class names; their contents are unchanged from the uploads.
+Every state now uses the same two-objective rule for both sides:
 
-From the repository root, on macOS/Linux or Windows Command Prompt:
+| Completed objectives | State ownership |
+|---|---|
+| Only your campaign has completed both | Yours |
+| Only the opponent has completed both | Opponent's |
+| Both campaigns have completed both | Starting owner |
+| Neither campaign has completed both | Starting owner |
 
-```sh
-mkdir out
-javac -d out src/State.java src/President.java src/ElectionResult.java src/ElectoralCollege.java src/ElectionGUI.java src/PresidentialSimulator.java
-java -cp out PresidentialSimulator
-```
+The prior scripted Texas/Illinois challenges have been removed. The opponent can contest states through the same objective rules. Events never assign EV directly; an objective change can change ownership, and the recap names each state that changes hands.
 
-On PowerShell, use `New-Item -ItemType Directory -Force out` for the first command; the two Java commands are the same.
+All states still use winner-take-all allocation in this game. District-level rules, popular-vote totals, contingent-election play, governing, and reelection are not implemented. A 269–269 tie is explicitly reported without a winner.
 
-Choose numeric menu options when prompted. The current process can remain alive while the results window is open; close the window when finished.
+## Resources and difficulty
 
-**Verification:** these commands are based on source inspection. The review environment had a Java runtime but no `javac`, so compilation and interactive desktop execution were not verified.
+| Resource rule | Normal | Hard |
+|---|---:|---:|
+| Your starting funds | $1,400 | $1,000 |
+| Opponent starting funds | $1,200 | $1,600 |
+| Campaign length | 16 turns | 16 turns |
+| Opponent cadence | Every second turn | Every second turn |
 
-### Troubleshooting
+Base costs are $100 for a town hall, $175 for a field office, and $150 for outreach. Fundraising normally adds $250 and costs a turn. Running mates reduce one action's cost by $50, or add $200 to the starting budget. Cash is a fictional resource, not a representation of real campaign costs.
 
-| Symptom | Action |
-| --- | --- |
-| `javac` is not found | Install a JDK and ensure its `bin` directory is on PATH. A runtime alone is insufficient. |
-| Public class filename error | Use the included `src/` names, without the uploaded `(1)` suffix. |
-| Main class cannot be found | Compile from the repository root, then run with `-cp out`. |
-| Text input crashes the menu | The current prototype expects integers. Input validation is a planned first fix. |
-| Headless/Swing error | Run in a graphical desktop session. A genuine console-only mode is planned. |
+Temporary event effects combine. Action prices cannot fall below $25, fundraising proceeds cannot fall below $50, and mandatory cash losses stop at zero. Optional paid offers must be affordable in full. All effects report their actual consequence.
 
-## Known limitations
+## Event behavior
 
-- The supplied campaign paths cannot produce a loss: the scoring threshold is below the minimum outcome reachable from the starting attributes. Election balancing is a blocking issue.
-- Difficulty is read but never used.
-- All state leanings are identical; the opponent has no separate model.
-- Several player attributes have no effect on the election.
-- Inputs are not robustly validated; attributes have no enforced bounds.
-- A tied Electoral College would be presented as a player loss, without a distinct no-majority result.
-- Maine and Nebraska are treated as winner-take-all in this simplified implementation.
-- Randomness cannot be supplied through a seed for reproducible bug reports.
-- There is one campaign decision, no governing loop, no reelection, no saves, no mod support, and no automated test suite.
-- The console flow always opens Swing; it is not yet a text-only game.
+One unused, eligible event is selected after each accepted turn. If none is eligible, the game reports that no new event applies. Events do not repeat in a campaign. An event that reopens work is eligible only when that work exists; an event that completes work needs an unfinished matching objective.
 
-The electoral allocation matches the National Archives' table for the 2024 and 2028 elections. Maine and Nebraska use district allocation plus statewide electors in the real system; the prototype does not implement that distinction. This is a game abstraction, not an election forecast. [National Archives: allocation](https://www.archives.gov/electoral-college/allocation)
+State-specific events choose an eligible state. This can strengthen a position without immediately changing ownership. The affected state is always shown. There are no numerical candidate ratings or random vote rolls.
 
-## Game vision
+Temporary effects apply to the next two **game turns**, not the next two uses of an action. Because the opponent acts every other turn, a two-turn effect may affect only one opponent action. Timed-effect events are not drawn on the final turn. Cash events can still occur on the final turn; unused final cash does not count toward victory.
 
-Create a run that tells a story: a candidate with a background and ambitions builds a coalition, faces setbacks, enters office, and encounters the consequences of earlier decisions.
+See `EVENTS.md` for every event and exact effect.
 
-Design principles:
+## Saving
 
-- **Choices have visible tradeoffs.** Explain costs and likely categories of consequences without revealing every event in advance.
-- **Consequences persist.** Promises, relationships, and unresolved crises follow the player into later turns.
-- **Losing produces a worthwhile ending.** Summarize the run and make another attempt easy.
-- **Customization remains understandable.** Start with useful presets, then expose advanced settings.
-- **Institutions matter.** Governing involves other actors with their own interests and constraints.
-- **The engine works independently of presentation.** Text and graphics should consume the same rules.
-- **Fictional gameplay stays distinct from factual reference material.** Use fictional candidates and clearly label alternate-history rules.
+There is one default slot at `saves/campaign.save`. Starting a new campaign asks before replacing it. A save error is shown without claiming success. The Save and Exit menu returns to the game if saving fails.
 
-The inspirations describe pacing and interface goals. The project should use original writing, art, branding, and interface assets.
+A save is a versioned setup plus accepted-command journal. It preserves random events, opponent actions, cash, objectives, temporary effects, and pending responses by replay. This format is intentionally tied to the current game rules and event catalog; it is not a cross-version save migration system.
 
-## First complete text release
-
-Proposed scope: one self-contained campaign, one presidential term, and a reelection or departure ending. Aim for a playtest session of roughly 30–60 minutes; adjust pacing from observation.
-
-1. Choose a candidate name, background preset, party affiliation within the scenario, and difficulty.
-2. Choose a running mate and campaign priorities.
-3. Play a finite campaign across twelve turns, allocating limited time and campaign funds.
-4. Encounter branching events, debates, staff problems, and competing commitments.
-5. Resolve election night, including a distinct no-majority branch.
-6. If elected, govern for sixteen quarterly turns with policy choices, institutional responses, and crises.
-7. Face reelection, retirement, or an early ending determined by the run.
-8. Receive a narrative legacy summary and an option to replay.
-
-A reelection victory ends the first release with an epilogue; playing a second term is a later feature. This keeps the first release finite while establishing the full campaign-to-office experience.
-
-MVP content target: approximately twenty reusable event definitions across campaign and governing phases. These are development targets, not shipped content. Each event needs eligibility conditions, choices, effects, follow-up text, and a testable consequence.
-
-Required supporting features: robust input, help, turn summaries, seeded runs, local save/load, clear endings, and no requirement to open a window.
-
-Deferred from this first release: complete primaries, detailed legislative simulation, playable authoritarian consolidation, comprehensive custom scenarios, multiplayer, mobile packaging, accounts, and advertising.
-
-## Future customization and governing
-
-| System | Early version | Later expansion |
-| --- | --- | --- |
-| Candidate | Name and background presets | Biography, traits, strengths, drawbacks, portraits, starting relationships |
-| Campaign | Limited actions and running-mate choice | Primaries, regional operations, staff roles, debate preparation, platform editor |
-| Opponents | Fictional opponent archetypes | Distinct priorities, campaign responses, rivalries, multiple candidates |
-| Run setup | Difficulty and seed | Starting resources, scenario rules, event frequency, institutional conditions |
-| Governing | Quarterly decisions and consequences | Legislative negotiations, appointments, budget cycles, diplomacy, emergencies |
-| Institutions | Basic response rules | Courts, legislature, civil service, media, regional governments, civic organizations |
-| Political trajectories | Election, reelection, retirement, early exit | Fictional democratic reform, institutional erosion, authoritarian consolidation, restoration |
-| Endings | Victory/loss and legacy narrative | Multiple-term legacies, succession, resignation, removal, regime transition |
-| Content | Authored event pool | Branching event chains, scenario packs, localization, data-only community mods |
-| Presentation | Console | Interactive map, state inspector, event cards, timelines, accessible charts |
-
-A dictatorship route should be a developed fictional game system with institutional resistance, social consequences, and unstable outcomes. It should not be a single button or automatically the best ending. Build ordinary governing first so alternate political trajectories have meaningful systems to interact with.
-
-In a U.S.-based scenario, distinguish the constitutional ruleset from fictional rule changes. A no-majority election is not simply an opponent victory: the constitutional process involves Congress. [National Archives: Electoral College FAQ](https://www.archives.gov/electoral-college/faq)
-
-## Architecture
-
-Keep Java for the text prototype. Extract rules from `main` before building a new GUI. See [architecture and design](docs/ARCHITECTURE.md).
-
-Proposed engine contract:
+## Developer commands
 
 ```text
-apply(GameState, PlayerAction, RandomSource) -> TurnResult
+java -jar campaign.jar --seed 42 --no-gui
+java -jar campaign.jar --save saves/second-campaign.save
+java -jar campaign.jar --color
 ```
 
-`TurnResult` returns the next state, narrative entries, and domain events. It does not read a scanner, open a window, call an ad provider, or write directly to a save file.
+`--color` enables optional ANSI heading colors for compatible terminals. The default uses plain text and avoids cursor-control sequences, so logs and older terminals remain readable.
 
-| Layer | Responsibility |
-| --- | --- |
-| Domain | Candidate, campaign, institutions, election outcomes, run configuration |
-| Engine | Validate actions, apply costs/effects, advance time, resolve events and endings |
-| Content | Versioned scenario and event data |
-| Persistence | Save/load, schema migration, deterministic replay metadata |
-| Console | Menus, input validation, text formatting |
-| GUI | Map, dashboards, event cards, controls |
-| Delivery | Optional web API, deployment, ads, and operational concerns |
+Compile and run the tests with a JDK 17+:
 
-The existing Swing screen is useful as an election-results prototype. A future browser GUI can call a Java engine through an API, but that introduces hosting and operations work. An offline desktop GUI can share the engine directly. Choose the long-term delivery platform after the text loop has been playtested; see the explicit decision gate in the roadmap.
+```text
+javac -Xlint:all -d build *.java tests/EngineTests.java tests/TextUITests.java
+java -Djava.awt.headless=true -cp build EngineTests
+java -Djava.awt.headless=true -cp build TextUITests
+```
 
-### Package contents
+If `javac` is not on PATH but the compiler module is present:
 
-- `src/`: six original source files with normalized filenames.
-- `README.md`: project overview, current instructions, limitations, and goals.
-- `docs/CODE_REVIEW.md`: concrete findings from the uploaded prototype.
-- `docs/ROADMAP.md`: phased milestones, acceptance criteria, and first backlog.
-- `docs/ARCHITECTURE.md`: engine boundaries and evolution toward graphics.
-- `docs/LICENSING_AND_REVENUE.md`: proposed licensing, monetization, and launch decisions.
-- `docs/GITHUB_SETUP.md`: repository configuration and feedback workflow.
-- `CONTRIBUTING.md`: contribution process.
-- `.github/ISSUE_TEMPLATE/`: bug, feature, and playtest templates.
-- `.github/pull_request_template.md`: change-review prompts.
+```text
+java -m jdk.compiler/com.sun.tools.javac.Main -Xlint:all -d build *.java tests/EngineTests.java tests/TextUITests.java
+```
 
-## Roadmap
-
-| Milestone | Outcome | Completion gate |
-| --- | --- | --- |
-| Foundation | Reliable console prototype | Reachable win/loss, input recovery, explicit tie, reproducible randomness |
-| Text alpha | Campaign → office → ending | Complete playable run, save/load, meaningful choices, clear consequences |
-| Text beta | Replayable customization | Expanded candidate setup, event chains, tested scenario data |
-| Governing expansion | Deeper institutions and alternate paths | Multiple viable fictional trajectories with understandable consequences |
-| GUI alpha | Map and dashboards over the engine | Equivalent rules and outcomes across UI clients |
-| Public 1.0 | Supported release | Onboarding, accessibility, packaging, documentation, feedback triage |
-| Sustainable release | Optional revenue | Stable hosted experience, provider eligibility, acceptable ad experience |
-
-Detailed tasks and exit criteria are in [ROADMAP.md](docs/ROADMAP.md). Milestones are a proposed sequence, not promised release dates.
-
-## Feedback and contributions
-
-Once the repository is created, use **Issues → New issue** for bugs, feature requests, and structured playtest feedback. Use **Discussions** for open-ended ideas, questions, and run stories after Discussions is enabled.
-
-Useful reports include the release or commit, operating system, Java version, seed and scenario when available, reproduction steps, and expected versus observed behavior. The current prototype has no seed to report; state that explicitly.
-
-Please search for duplicates and avoid uploading private information in logs or saves. Technical contributors can start with [CONTRIBUTING.md](CONTRIBUTING.md). Writers, playtesters, artists, and accessibility reviewers can also contribute.
-
-Issue templates are included locally; GitHub features are not configured until the repository is created and these files are pushed. [GitHub issue templates](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/about-issue-and-pull-request-templates) · [GitHub Discussions](https://docs.github.com/en/discussions/quickstart)
-
-## Licensing and revenue
-
-**Proposed default: MIT for source code**, if the maintainer wants simple reuse and is comfortable with commercial or closed-source forks. **Alternative: GPLv3** if distributed derivatives should preserve source availability under the same license. Both permit commercial use, so advertising does not require making the game proprietary. [MIT](https://choosealicense.com/licenses/mit/) · [GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
-
-No `LICENSE` has been applied in this planning package. Before an open-source release, establish who owns the supplied work, choose the license, and add its complete text with appropriate notices. Asset rights and third-party notices must be tracked separately. See [LICENSING_AND_REVENUE.md](docs/LICENSING_AND_REVENUE.md).
-
-Initial plan: release a free, ad-free text game. Later, evaluate a hosted edition with unobtrusive ads outside active decision controls and an optional sponsorship route. Advertising approval and revenue are not guaranteed. The game must remain playable if ads fail to load.
-
-Source hosting on GitHub and commercial game hosting are separate decisions. Review hosting restrictions before placing a revenue-generating application on GitHub Pages. [GitHub Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)
+There are now **14 production Java files**. Copy the whole source set; replacing only the old six files is insufficient. Remove duplicate filename-suffixed source copies from your build directory. See `ARCHITECTURE.md` for integration and extension points, `REVIEW.md` for design decisions, and `VALIDATION.md` for tested scope.

@@ -1,94 +1,70 @@
-# Presidential Simulator — Governance Edition
+# Presidential Simulator — Interface Playtest
 
-This release completes three next steps from the backlog: policy dilemmas (PRES-04), public correspondence and history (PRES-05), and playable midterms (ELEC-02). It retains the monthly career loop, campaign system, saves, and developer tools.
+A text-based political career: campaign, debate, win or lose, govern month by month, and face reelection. This release focuses on a readable interface and a reliable first-time experience.
 
-## Start
+**Start a new career. Older saves are intentionally unsupported.** There is one current ruleset and no import menu.
 
-Extract the full ZIP into a writable folder. Windows: double-click `run-windows.bat`. macOS/Linux: run `sh run.sh` in that folder. Direct launch: `java -jar governance.jar`. Requires Java 17 or newer. The runnable JAR is included; no external libraries are needed.
+## Open the game
 
-Type a menu number and press Enter. `0` goes back or opens the game menu. New campaign difficulty and running mate are selected during setup. Use `--seed 42` for repeatable new games, `--color` for optional color, `--no-gui` for text only, or `--help` for launch options. Rebuild after editing source: `sh build.sh` or `build-windows.bat`.
+Requires Java 17 or newer. Extract the entire ZIP into a writable folder.
 
-## Monthly career loop
+- **Windows:** double-click `run-windows.bat`.
+- **macOS/Linux:** run `sh run.sh` from the extracted folder.
+- **Direct launch:** `java -jar presidential-simulator.jar`.
 
-Election → transition → inauguration → 48 monthly turns → another election → second term → retirement after 96 months of service. Nonconsecutive terms remain possible. A defeat opens four annual rebuilding decisions; unresolved donor meetings withhold $200 from the next campaign. Two victories is the normal election limit. Developer overrides mark the save and never fabricate EV totals.
+Choose **1 — Start a new career**, then pick a difficulty and running mate. Choose **3 — How to Play** first if you want a short guide; it works without creating a career.
 
-Take up to two actions per month, then select **End month**. Closing a month adds $100 operating receipts and deducts $75 routine expenses, processes follow-ups and policy deliveries, resolves midterms after month 24, and may draw an office event. Browsing and cancelling are free. Pending random events must be answered before spending more actions or advancing time; a free response is always available.
+## Your first few minutes
 
-The calendar starts with inauguration in January 2029. Campaigns remain separate 16-turn interludes between governing blocks. Midterms use the exact halfway point after 24 months, not the real-world November calendar. There is no extra presidential service during campaign interludes.
+1. Open **Take a campaign action → Campaign in a state**. Inspect the available work and its cost. Confirm a visit to spend cash and one campaign turn.
+2. Use **Fundraise** when cash runs low. Passing a turn still lets the opponent and events advance.
+3. Read event descriptions and compare the answers. The displayed main effects are a summary; **4 — Details** shows the full effects and missed-response consequence.
+4. Check **ST → Statistics**. Campaign forecasts are uncertain, and both candidates can win.
+5. Use **0 → Game menu** for saving, settings, help, developer tools, or leaving the game.
 
-## New: concrete policy choices
+The campaign has 16 turns. Victory leads through transition to the presidency; defeat opens four annual rebuilding decisions before another campaign. Each presidential month allows up to two actions, then you explicitly choose **End month**. Your record affects future elections. The normal career permits two elected terms.
 
-Each of eight issues offers two named alternatives. Examples include community clinic sessions versus unified referral scheduling, and tutoring sessions versus pooled purchasing. The policy menu displays the benefit, competing concern, signing cost, and delivery period before confirmation.
+## Controls and readable screens
 
-| Approach | Signing cost | Delivery | What the choice means |
-| --- | --- | --- | --- |
-| Expand program | $180 | After three month closures | Additional local service capacity, with extra staffing/administrative work |
-| Reorganize program | $100 | After two month closures | A shared process, with transition work or reduced local flexibility |
-
-These are authored game costs and service records, not national budget estimates. The actual tradeoff mechanics are money, delivery time, and which group's request is addressed; the game does not simulate macroeconomic or voter-bloc consequences.
-
-Propose an initiative, secure Congress's support, then sign or veto it. Proposing, negotiating, signing, and vetoing each use one action. Signing requires sufficient treasury funds and starts an implementation record. Signing an already-active identical policy is rejected without spending anything; veto the duplicate bill to clear the desk. Reversing an initiative cancels unfinished work for that issue, spends the new appropriation, and does not refund the old one. Only the replacement can subsequently deliver.
-
-No more than one bill is active at once. Congress requires 218 of 435 House seats and 51 of 100 Senate seats, or a negotiated agreement for one bill. Signing or vetoing consumes the agreement. Midterms and developer chamber-control changes invalidate it and refresh the bill's stage.
-
-## New: public correspondence
-
-**Public & personal → Public correspondence** lists sixteen requests across distinct authored groups. Each issue has two competing requests, one for each policy approach. Pages show four requests at a time.
-
-- **Open:** the request is unresolved.
-- **Acknowledged:** a specific reply was published; it does not claim the service exists.
-- **Delivery scheduled:** the requested initiative was signed and funded.
-- **Delivered:** its scheduled implementation finished.
-
-A targeted reply costs one monthly action and no money. Each request can receive one reply per term; repeated replies are rejected. Replying never downgrades an existing delivery state. Choosing one approach leaves the alternative request open. A later reversal reopens the displaced request, including one previously delivered, while dated history preserves what happened.
-
-**Public & personal → Correspondence history** shows the dated updates. The dashboard retains a concise latest feedback message. The full correspondence history is separate from general briefings, which do not automatically answer or fulfill every request. At term end, request statuses, laws, and promises are archived into the career journal.
-
-## New: playable midterms
-
-Open **Party & elections** to inspect the board. Visits are available only during months 13–24, before the close of month 24. Each contest requires **a listening visit and an organizing visit**. Each visit spends one of the same two monthly actions as governing; no public treasury money is spent. Duplicate visits are rejected.
-
-| Board component | Seats for your caucus |
+| Control | Result |
 | --- | --- |
-| Fixed House seats | 210 |
-| Eight House slates | Two seats for each slate with both visits completed |
-| Fixed Senate seats | 48 |
-| Four Senate races | One seat for each race with both visits completed |
+| Number + Enter | Choose the displayed option |
+| 0 + Enter | Back or Game menu, as labeled on that screen |
+| ? + Enter | Open short help topics, then return to your screen |
+| ST + Enter | Open statistics during a career |
+| > / < + Enter | Read the next or previous page |
+| D + Enter | Open the full report after an action |
 
-Incomplete contests go to the other caucus. All other seats are fixed for that caucus; House totals remain 435 and Senate totals remain 100. Four complete House slates and three complete Senate races produce control of both chambers. Winning every contest requires all 24 available actions during the campaign window, leaving no room for other actions then. The board stays visible after resolution, with each outcome recorded.
+The default frame is **100 columns × 28 rows**. Descriptions, headings, status lines and prompts wrap instead of being cut off with ellipses. Long screens use pages; the footer tells you which page is open. Decision prompts keep response/navigation shortcuts visible. Repeated invalid entries display one helpful correction without growing the screen indefinitely.
 
-These are fictional contest bundles and deterministic objective rules. There is no hidden pass/fail roll or attempt to forecast real elections. General ally meetings and public briefings no longer select chamber totals. The old generic ally command remains a bookkeeping hook for source compatibility but is not offered as a substitute for targeted visits.
+Interactive terminals use a fixed frame. Rows redraw only when changed; timer ticks update one reserved area without appending lines or moving your input cursor. `--plain` gives an ANSI-free transcript and omits intermediate tick output (timeouts still apply). `--no-color` disables color. Resize the frame through **Game menu → Game settings → Display size**, or launch with `--width 100 --height 28`. At launch, the requested frame is capped to the detected visible window, including on Windows. The Windows launcher explicitly selects full-screen mode. Automatic resizing while playing remains future work; use Display size after changing the window.
 
-## Campaign promises and reelection
+## Live countdowns
 
-Record up to two named policy promises during a campaign, for free. A promise cannot be rewritten within that campaign. A matching signed law marks it kept; a conflicting law records a contradiction. This is a **legislative** promise status: actual delivery is separately visible in correspondence. Reversals remain in history even if a later law restores the promised approach.
+Three campaign debates occur on turns 4, 8 and 12. Each has three questions with a fresh **60-second** answer clock. Live press briefings also allow 60 seconds; live interviews allow 45.
 
-Completed town halls, field offices, and outreach in states you hold supply one-use transition credits. Final-year administrative work prepares corresponding objectives for the next campaign. A kept promise adds outreach preparation; any contradicted promise withholds it. Annual budget reconciliation recovers $100 once per administrative year. Published final-year accounts unlock a $100 fictional private fundraising benefit next campaign. Public treasury is never transferred to campaign cash.
+The footer is the authoritative **Time left** display. It visibly changes each second without Enter, using elapsed real time. Choose and confirm before it reaches zero. An unanswered debate question is recorded as missed and advances to the next question. Explicitly leaving skips the remaining questions.
 
-## Events and shallow hooks
+**Menus, help, statistics and effects details pause the clock.** Confirmation and page browsing do not. The next question's timer waits while you read the previous report. Saving preserves whole seconds; offline time is not charged. A fractional second may be lost on save/restart.
 
-The original campaign has 36 random events. The presidency retains six random events with prerequisites, choices, costs, and delayed effects. Office event frequency is selectable: off, every six months, or every three months. Eligible events are selected with the saved seed and appear at most once per term. Browsing/reloading does not reroll them. Turning events off retains existing pending responses and follow-ups.
+For untimed answers, turn live clocks off under **Game menu → Game settings → 5**. Ordinary campaign offers and world decisions still use their displayed turn/month deadlines.
 
-Policy deliveries are separate scheduled work, not random events. Both kinds of follow-up settle no later than term end. No new random event is drawn after month 48.
+Debate answers have resource and scoring tradeoffs. Opponents have a consistent style. The final score margin produces a small bounded vote-share effect that persists to election day. **ST → 7** shows the current campaign's debate record. The scoring and economic coefficients are fictional game parameters, not calibrated forecasts.
 
-Appointments, preparedness, visits, rest, and donor meetings remain shallow hooks. Named officials, confirmations, fatigue, active crises, and donor returns are not implemented. Public feedback is descriptive; national approval percentages, GDP, unemployment, wars, scandals, and authoritarian paths remain outside this release. The operating account is not the national economy.
+## Saving and exiting
 
-## Saves and developer tools
+Accepted actions autosave to `saves/career.save`. Three manual slots (`slot-1.save` through `slot-3.save`) support names and three rotating backups each. Manual saving displays confirmation. Use **Load / resume** for autosaves, slots and backups.
 
-Default autosave: `saves/governance.save`. Three manual slots: `saves/governance-slot-1.save` through `governance-slot-3.save`. Accepted commands and end-of-input autosave. Save/load/exit remain available while an event is pending. Writes replace atomically where supported. The versioned command journal reproduces proposals, implementation queues, requests, midterm work, settings, and developer actions.
+Use **Game menu → Leave or end career → Save and exit** to leave safely. Retirement is separate and asks for confirmation. Closing the input stream also attempts an autosave. Older-format files are rejected with an explanation and are not overwritten by loading.
 
-**Earlier monthly and quarterly career saves require their original editions.** This release uses `presidency-governance-v1` because the same actions now have different costs and midterm outcomes. It rejects older career rules rather than silently changing a saved game. New default and slot filenames keep those files separate. Do not intentionally point `--save` at an older career file you want to retain. `campaign-events-v1` import from `saves/campaign.save` is still supported.
+## Development and limits
 
-Developer tools include forced outcomes, money, chamber control, event triggering, time advancement, reelection and term jumps. **Jump to a test scenario → Start midterm campaigning** opens month 13; this is the fastest way to test the new board. A scheduled event may need a response first. Scenario jumps replace the active timeline and mark earlier entries as development history. Finishing a term automatically declines pending events and leaves uncompleted midterm contests to the other caucus.
+Source code and the runnable JAR are included. Rebuild with `sh build.sh` or `build-windows.bat`; run the current test suite with `sh test.sh`.
 
-## Development
+The engine remains independent of the terminal: commands change state, immutable views describe it, and the UI submits elapsed-clock commands. Save compatibility is not a development requirement. Older helper code may still be refactored, but older rule profiles and career imports are no longer available.
 
-28 production Java sources, no external dependencies. The model remains independent of the terminal renderer. See `ARCHITECTURE.md`, `BACKLOG.md`, `CHANGELOG.md`, and `VALIDATION.md`.
+[VALIDATION.md](VALIDATION.md) lists actual checks and platform limits. [IMPLEMENTATION-LOG.md](IMPLEMENTATION-LOG.md) tracks remaining work, including a guided tutorial career, automatic resize handling, richer debate dynamics and the existing institutional/calendar audit. [MODEL-NOTES.md](MODEL-NOTES.md) and [REALISM-AUDIT.md](REALISM-AUDIT.md) document simulation assumptions; historical release notes in those files are superseded by this build's single-ruleset/save policy.
 
-```sh
-java -m jdk.compiler/com.sun.tools.javac.Main -Xlint:all -d test-build ./*.java tests/*.java
-java -cp test-build EngineTests
-java -cp test-build MonthlyTests
-java -cp test-build GovernanceTests
-java -cp test-build GovernanceUITests
-```
+## Stable-screen patch
+
+The renderer no longer writes linefeeds or clears the whole screen during normal full-screen redraws. It temporarily disables automatic line wrapping, keeps a spare row below input, and restores normal wrapping on exit. The timer preserves the input cursor and edits only its reserved footer cells. See [STABILITY.md](STABILITY.md) for verification and platform limits.

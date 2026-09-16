@@ -24,6 +24,7 @@ public record CareerCommand(Type type, GameCommand campaign, GovernanceAction go
     }
     public enum DeveloperAction {
         FORCE_WIN("Force a win in the current campaign"), FORCE_LOSS("Force a loss in the current campaign"),
+        MIDTERM_START("Replace timeline: open the midterm campaign in month 13"),
         MID_FIRST_TERM("Replace timeline: start year 3 of the first term"),
         REELECTION_START("Replace timeline: start the reelection campaign"),
         MID_SECOND_TERM("Replace timeline: start year 3 of the second term"),

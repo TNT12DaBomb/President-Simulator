@@ -9,7 +9,7 @@ import java.util.Properties;
 
 /** Career replay persistence; imports the supplied campaign-events-v1 format. */
 public final class CareerSave {
-    public static final String FORMAT = "presidency-monthly-v1";
+    public static final String FORMAT = "presidency-governance-v1";
     private CareerSave() { }
     public static void write(CareerEngine engine, Path destination) throws IOException {
         Properties data = new Properties();
@@ -62,7 +62,7 @@ public final class CareerSave {
             }
             return imported;
         }
-        if (!FORMAT.equals(data.getProperty("format"))) throw new IOException("Unsupported save version. Quarterly career saves require the Career Edition; keep them unchanged. Campaign-events-v1 imports are supported.");
+        if (!FORMAT.equals(data.getProperty("format"))) throw new IOException("Unsupported save version. Quarterly career saves require the Career Edition; monthly-v1 saves require the Monthly Edition. Keep both unchanged. Campaign-events-v1 imports are supported.");
         try {
             int count = Integer.parseInt(required(data, "commands"));
             if (count < 0 || count > CareerEngine.MAX_COMMANDS) throw new IllegalArgumentException("Invalid command count");

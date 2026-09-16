@@ -13,10 +13,10 @@ Status meanings: **Done** = playable and tested in this release; **Hook** = type
 | PRES-01 | Presidency | P0 | Done | Monthly desk, explicit end-month, separate public operating account | CORE-01 |
 | PRES-02 | Presidency | P0 | Done | Bill proposal/negotiation/sign/veto; eight issue areas | PRES-01 |
 | PRES-03 | Presidency | P1 | Hook | Appointments/preparedness: add named officials, vacancies, and concrete follow-up tasks | PRES-01 |
-| PRES-04 | Presidency | P1 | Planned | Replace generic programs with authored policy dilemmas and documented consequences | PRES-02 |
-| PRES-05 | Presidency | P1 | Planned | Distinct public correspondence groups and longitudinal descriptive feedback | PRES-04 |
-| ELEC-01 | Elections | P0 | Done | One midterm checkpoint/term with visible authored chamber-control branches | PRES-01 |
-| ELEC-02 | Elections | P1 | Planned | Replace two-branch midterm fixture with a playable seat-contest system | ELEC-01 |
+| PRES-04 | Presidency | P1 | Done | Sixteen authored initiatives, signing costs, tradeoffs, delayed delivery, and safe supersession | PRES-02 |
+| PRES-05 | Presidency | P1 | Done | Sixteen distinct requests, acknowledgment/delivery states, and dated history | PRES-04 |
+| ELEC-01 | Elections | P0 | Done | One midterm checkpoint per term, now resolving the playable contest board | PRES-01 |
+| ELEC-02 | Elections | P1 | Done | Twelve fictional contests with targeted visits, action limits, and exact seat accounting | ELEC-01 |
 | ELEC-03 | Elections | P0 | Done | Administrative record and kept/contradicted promises change next campaign preparation | CAM-02, PRES-02 |
 | ELEC-04 | Elections | P1 | Planned | Separate narrative aftermath for narrow/large wins and losses; preserve exact result history | CAM-01 |
 | ELEC-05 | Elections | P2 | Planned | Explicit tie/contingent-election flow instead of skipping to next cycle | CAM-01 |
@@ -38,6 +38,8 @@ Status meanings: **Done** = playable and tested in this release; **Hook** = type
 | EXP-01 | Long-Term/Experimental | P2 | Planned | Constitutional power/institution systems and consequences; no single dictator button | PRES-04, WORLD-03 |
 | EXP-02 | Long-Term/Experimental | P2 | Planned | Alternate term-limit modes isolated from normal two-term careers | EXP-01 |
 
-Suggested next bounded milestone: improve the presidency's public correspondence and policy-dilemma records, then replace the midterm fixture with actual player decisions. Preserve the end-to-end loop and save determinism before adding more content families.
+Completed in this release: PRES-04, PRES-05, and ELEC-02. The new midterm-start developer scenario supports testing them. See CHANGELOG.md for save compatibility.
 
-Numeric political ratings/probability forecasts are not part of this implementation. National economic simulation, turnout/popular-vote data, and historical scenarios also require their own explicit future designs; no fabricated statistics are supplied by the current dashboard.
+Next bounded milestone: PRES-03 named appointments with vacancies and follow-up tasks, followed by CHAR-04's dedicated cross-term archive. Calendar refinement (CORE-03) and save-slot descriptions (UI-03) remain planned. WORLD-02 remains planned: this release uses the existing six random office events; policy deliveries are scheduled work, not additional random events.
+
+The new midterm board remains an explicit fictional objective game, not a real electoral forecast. Public feedback remains descriptive. National economic simulation and historical scenarios remain separate future designs.

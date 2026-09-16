@@ -73,7 +73,7 @@ public final class TextUI {
         }
     }
     private void welcome() {
-        title("PRESIDENTIAL SIMULATOR  /  MONTHLY EDITION");
+        title("PRESIDENTIAL SIMULATOR  /  GOVERNANCE EDITION");
         text("Campaign, take office, and build a continuing career. Type a menu number and press Enter.");
         out.println("\n  1  Start a new career\n  2  Load or resume\n  3  How to play\n  0  Exit");
         switch (choose("Welcome", 0, 3)) {
@@ -201,9 +201,8 @@ public final class TextUI {
                 CareerCommand.GovernanceAction.BUDGET_REVIEW, CareerCommand.GovernanceAction.SERVICE_REVIEW,
                 CareerCommand.GovernanceAction.APPOINT_OFFICIAL, CareerCommand.GovernanceAction.MANAGE_CRISIS});
             case 2 -> legislationMenu();
-            case 3 -> actionMenu("PUBLIC & PERSONAL", new CareerCommand.GovernanceAction[]{CareerCommand.GovernanceAction.PUBLIC_BRIEFING,
-                CareerCommand.GovernanceAction.TRAVEL, CareerCommand.GovernanceAction.REST});
-            case 4 -> actionMenu("PARTY & ELECTIONS", new CareerCommand.GovernanceAction[]{CareerCommand.GovernanceAction.CAMPAIGN_ALLIES, CareerCommand.GovernanceAction.FUNDRAISE});
+            case 3 -> publicMenu();
+            case 4 -> midtermMenu();
             case 5 -> officeRecords();
             case 6 -> { if (confirm("Close this month? Unused actions expire. Receipts +$100 and routine costs -$75 apply; events or midterms may follow.")) submit(CareerCommand.office(OfficeCommand.simple(OfficeCommand.Type.END_MONTH))); }
         }
@@ -222,6 +221,7 @@ public final class TextUI {
     private void legislationMenu() {
         Presidency.View p = career.view().presidency(); title("LEGISLATIVE DESK");
         text(p.congress().rule()); text("Current bill: " + (p.bill() == null ? "None" : p.bill().toString()));
+        if (p.bill() != null) describePolicy(p.bill().issue(), p.bill().approach());
         out.println("\n  1  Propose an initiative\n  2  Negotiate with leadership\n  3  Sign bill\n  4  Veto bill\n  0  Back");
         int c = choose("Legislation", 0, 4);
         if (c == 1) choosePolicy(OfficeCommand.Type.PROPOSE);
@@ -235,10 +235,74 @@ public final class TextUI {
         int base = (group - 1) * 4;
         for (int i = 0; i < 4; i++) out.println("  " + (i + 1) + "  " + issues[base + i]);
         out.println("  0  Back"); int issue = choose("Issue", 0, 4); if (issue == 0) return;
-        out.println("  1  Expand the program\n  2  Reorganize the program\n  0  Back");
+        for (Policy.Approach a : Policy.Approach.values()) {
+            text((a.ordinal() + 1) + "  " + PolicyCatalog.option(issues[base + issue - 1], a).title());
+            describePolicy(issues[base + issue - 1], a);
+        }
+        out.println("  0  Back");
         int approach = choose("Approach", 0, 2); if (approach == 0) return;
         text(type == OfficeCommand.Type.PLEDGE ? "Promises are public and cannot be rewritten during this campaign. No campaign turn is spent." : "Proposing uses one monthly action. Signing a conflicting approach later records a contradicted promise.");
         if (confirm("Record this choice?")) submit(CareerCommand.office(OfficeCommand.policy(type, issues[base + issue - 1], Policy.Approach.values()[approach - 1])));
+    }
+    private void describePolicy(Policy.Issue issue, Policy.Approach approach) {
+        PolicyCatalog.Option o = PolicyCatalog.option(issue, approach);
+        text("Signing cost $" + o.cost() + "; delivery after " + o.deliveryMonths() + " month closures, or by term end. " + o.benefit() + ".");
+        text("Tradeoff: " + o.tradeoff() + ". Requested by " + o.group() + ".");
+    }
+    private void publicMenu() {
+        title("PUBLIC & PERSONAL");
+        out.println("  1  Public correspondence\n  2  Briefings, visits & personal time\n  3  Correspondence history\n  0  Back");
+        switch (choose("Public desk", 0, 3)) {
+            case 1 -> correspondenceMenu();
+            case 2 -> actionMenu("PUBLIC ACTIONS", new CareerCommand.GovernanceAction[]{CareerCommand.GovernanceAction.PUBLIC_BRIEFING, CareerCommand.GovernanceAction.TRAVEL, CareerCommand.GovernanceAction.REST});
+            case 3 -> journal(career.view().presidency().correspondence().history().stream()
+                .map(u -> "Month " + u.month() + " / " + u.status() + ": " + u.message()).toList(), "PUBLIC CORRESPONDENCE HISTORY");
+        }
+    }
+    private void correspondenceMenu() {
+        int page = 0;
+        while (true) {
+            List<PublicCorrespondence.Request> all = career.view().presidency().correspondence().requests();
+            title("PUBLIC REQUESTS / PAGE " + (page + 1) + " OF 4");
+            text("A reply uses one action and acknowledges a concern. Delivery requires funding the corresponding initiative. Competing requests remain visible.");
+            for (int i = 0; i < 4; i++) {
+                PublicCorrespondence.Request r = all.get(page * 4 + i);
+                text((i + 1) + "  " + r.group() + " / " + r.status() + " / " + (r.answered() ? "Reply published" : "No reply"));
+                text(r.request());
+            }
+            out.println("  5  Next page\n  6  Previous page\n  0  Back");
+            int c = choose("Reply to request or change page", 0, 6);
+            if (c == 0) return;
+            if (c == 5) { page = (page + 1) % 4; continue; }
+            if (c == 6) { page = (page + 3) % 4; continue; }
+            PublicCorrespondence.Request r = all.get(page * 4 + c - 1);
+            if (r.answered()) { text("A reply is already on the record."); pause(); continue; }
+            if (confirm("Publish an acknowledgment to " + r.group() + "? This spends one action and does not mark the request delivered.")) {
+                submit(CareerCommand.office(OfficeCommand.choice(OfficeCommand.Type.REPLY, r.id()))); return;
+            }
+        }
+    }
+    private void midtermMenu() {
+        title("PARTY & MIDTERM ELECTIONS");
+        int month = career.view().termMonths();
+        text("Targeted visits open in month 13 and close after month 24. Complete both visits to win a contest. Each costs one monthly action and no public money.");
+        text("Eight fictional House slates each carry two seats; four Senate races each carry one. Fixed seats: your caucus 210 House / 48 Senate. Other seats belong to the other caucus. Winning four House slates and three Senate races yields control of both chambers.");
+        text(month < 12 ? "Campaign opens in " + (12 - month) + " months." : month < 24 ? "Campaign open; " + (24 - month) + " months until results." : "Results are final for this term.");
+        out.println("  1  House contests 1–4\n  2  House contests 5–8\n  3  Senate contests\n  4  Donor meeting\n  0  Back");
+        int group = choose("Party desk", 0, 4); if (group == 0) return;
+        if (group == 4) { actionMenu("PRIVATE DONORS", new CareerCommand.GovernanceAction[]{CareerCommand.GovernanceAction.FUNDRAISE}); return; }
+        List<MidtermCampaign.Contest> contests = career.view().presidency().midtermContests();
+        int base = (group - 1) * 4;
+        for (int i = 0; i < 4; i++) {
+            MidtermCampaign.Contest c = contests.get(base + i);
+            text((i + 1) + "  " + c.name() + " / " + c.seats() + " seats / " + c.outcome());
+            text("Listening: " + (c.listened() ? "complete" : "needed") + "; organizing: " + (c.organized() ? "complete" : "needed"));
+        }
+        out.println("  0  Back"); int chosen = choose("Contest", 0, 4); if (chosen == 0) return;
+        if (month < 12 || month >= 24) { text("Visits are only available during months 13–24."); pause(); return; }
+        out.println("  1  Listening visit\n  2  Organizing visit\n  0  Back");
+        int task = choose("Visit", 0, 2); if (task == 0) return;
+        if (confirm("Spend one monthly action on this visit?")) submit(CareerCommand.office(OfficeCommand.choice(OfficeCommand.Type.MIDTERM_TASK, (base + chosen - 1) * 2 + task - 1)));
     }
     private void officeEvent(PresidencyEvent event) {
         title("OFFICE EVENT / " + event.title()); text(event.description());
@@ -260,14 +324,15 @@ public final class TextUI {
                 Presidency.View p = career.view().presidency();
                 text("Your caucus: " + p.congress().houseSeats() + "/435 House seats, " + p.congress().senateSeats() + "/100 Senate seats.");
                 text(p.congress().rule());
-                text("These are authored fictional game scenarios. Midterms after month 24 use ally campaign work for the House branch and public briefing work for the Senate branch.");
+                text("Midterms resolve after month 24. Each contest requires a listening visit and an organizing visit during months 13–24. Incomplete contests go to the other caucus.");
                 if (p.promises().isEmpty()) text("No campaign promises were recorded.");
                 p.promises().forEach(x -> text(x.issue() + " / " + x.approach() + ": " + x.status())); pause();
             }
             case 3 -> {
                 Presidency.View p = career.view().presidency();
                 text("Laws signed: " + p.lawsPassed() + "; vetoes: " + p.billsVetoed() + "."); p.laws().forEach(this::text);
-                if (p.delayedEffects().isEmpty()) text("No pending follow-ups.");
+                p.implementations().forEach(i -> text("Policy delivery at end of month " + i.dueMonth() + ": " + i.title()));
+                if (p.delayedEffects().isEmpty() && p.implementations().isEmpty()) text("No pending follow-ups.");
                 p.delayedEffects().forEach(x -> text("Term month " + x.dueMonth() + ": " + x.description())); pause();
             }
             case 4 -> journal(career.view().history(), "CAREER JOURNAL");
@@ -382,7 +447,7 @@ public final class TextUI {
             case 3 -> loadMenu();
         }
     }
-    private Path slotPath(int slot) { return savePath.toAbsolutePath().getParent().resolve("monthly-slot-" + slot + ".save"); }
+    private Path slotPath(int slot) { return savePath.toAbsolutePath().getParent().resolve("governance-slot-" + slot + ".save"); }
     private void loadMenu() {
         title("LOAD / RESUME");
         out.println("  1  Resume autosave\n  2  Load a manual slot\n  3  Import the previous campaign save\n  0  Back");
@@ -422,10 +487,10 @@ public final class TextUI {
                 if (c > 0) developer(c == 1 ? CareerCommand.DeveloperAction.FORCE_WIN : CareerCommand.DeveloperAction.FORCE_LOSS);
             }
             case 2 -> {
-                out.println("\n  1  Midway through first term\n  2  Start reelection campaign\n  3  Midway through second term\n  4  Final month of second term\n  0  Back");
-                int c = choose("Scenario", 0, 4);
+                out.println("\n  1  Midway through first term\n  2  Start reelection campaign\n  3  Midway through second term\n  4  Final month of second term\n  5  Start midterm campaigning\n  0  Back");
+                int c = choose("Scenario", 0, 5);
                 if (c > 0) developer(new CareerCommand.DeveloperAction[]{CareerCommand.DeveloperAction.MID_FIRST_TERM,
-                    CareerCommand.DeveloperAction.REELECTION_START, CareerCommand.DeveloperAction.MID_SECOND_TERM, CareerCommand.DeveloperAction.FINAL_QUARTER}[c - 1]);
+                    CareerCommand.DeveloperAction.REELECTION_START, CareerCommand.DeveloperAction.MID_SECOND_TERM, CareerCommand.DeveloperAction.FINAL_QUARTER, CareerCommand.DeveloperAction.MIDTERM_START}[c - 1]);
             }
             case 3 -> {
                 out.println("\n  1  Add $500 campaign cash\n  2  Add $500 public treasury\n  0  Back"); int c = choose("Resource", 0, 2);
@@ -483,9 +548,10 @@ public final class TextUI {
         text("Campaigns last 16 turns. Complete each state's two listed objectives to claim it; if both sides or neither completes them, its starting owner keeps it. Events affect both campaigns. You can lose.");
         text("Record up to two campaign promises before election night. Victories lead through transition and inauguration; defeats lead to four annual rebuilding decisions and another run.");
         text("In office, take up to two actions per month, then choose End month. Each term has 48 months. Pending events must be answered; a free response is always available. Midterms occur after month 24.");
+        text("Public correspondence has separate acknowledgment and delivery states. Policy signing spends the listed cost and schedules delivery; alternatives remain unresolved. Targeted midterm visits open in months 13–24 from Party & Elections.");
         text("Bills need chamber majorities or a one-bill negotiated agreement. Propose, negotiate, then sign or veto. Your promises and final-year administrative work affect inherited preparation for reelection.");
         text("Public feedback is descriptive. Operating cash is separate from campaign money; GDP and numerical approval are not modeled. The normal career ends after two elected terms.");
-        text("Developer tools mark the save. Quarterly Career Edition saves remain separate; campaign-events-v1 saves can be imported. See README.md and BACKLOG.md for scope and future plans."); pause();
+        text("Developer tools mark the save. Earlier quarterly and monthly career saves need their original editions; campaign-events-v1 saves can be imported. See README.md and BACKLOG.md for scope and future plans."); pause();
     }
 
     private void browse(boolean campaign) {

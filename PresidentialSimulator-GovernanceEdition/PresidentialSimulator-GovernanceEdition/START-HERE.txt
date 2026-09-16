@@ -1,0 +1,24 @@
+PRESIDENTIAL SIMULATOR — GOVERNANCE EDITION
+
+Extract the full ZIP into a writable folder. Java 17 or newer is required.
+Windows: double-click run-windows.bat.
+macOS/Linux: open a terminal in this folder and run: sh run.sh
+Direct launch: java -jar governance.jar
+
+Type menu numbers and press Enter. Zero goes back or opens the game menu.
+Two actions are available each month; choose End month when ready.
+
+New features:
+- Legislative agenda: named policy alternatives, costs, tradeoffs and delivery.
+- Public & personal: public requests and dated correspondence history.
+- Party & elections: targeted midterm contests during months 13–24.
+
+Quick midterm test:
+Start a career → Game menu (0) → Developer tools (2) →
+Jump to a test scenario (2) → Start midterm campaigning (5).
+Confirm the scenario and respond to any pending event, then open Party & elections.
+Developer actions mark the save.
+
+New saves use governance.save and governance-slot-N.save.
+Older monthly and quarterly career saves need their original game editions.
+See README.md for rules, VALIDATION.md for checks, and BACKLOG.md for planned work.

@@ -12,6 +12,10 @@ public final class Presidency {
     public static final int MONTHS_PER_TERM = 48, ACTIONS_PER_MONTH = 2, RECEIPTS = 100, EXPENSES = 75;
     private final Random random;
     private final Congress congress = new Congress();
+    private final PublicCorrespondence correspondence = new PublicCorrespondence();
+    private final MidtermCampaign midtermCampaign = new MidtermCampaign();
+    private final List<Implementation> implementations = new ArrayList<>();
+    public record Implementation(Policy.Issue issue, Policy.Approach approach, int dueMonth, String title) { }
     private final Map<Policy.Issue, Policy.Approach> pledges;
     private final Map<Policy.Issue, Policy.Approach> laws = new EnumMap<>(Policy.Issue.class);
     private final Set<String> usedEvents = new HashSet<>();
@@ -29,8 +33,9 @@ public final class Presidency {
     public record View(String date, int monthsCompleted, int actionsLeft, int treasury, String publicFeedback,
                        String support, Congress.View congress, Policy.Bill bill, List<Policy.Promise> promises,
                        List<String> laws, int lawsPassed, int billsVetoed, PresidencyEvent pendingEvent,
-                       List<DelayedView> delayedEffects, List<String> annualWork) {
-        public View { promises = List.copyOf(promises); laws = List.copyOf(laws); delayedEffects = List.copyOf(delayedEffects); annualWork = List.copyOf(annualWork); }
+                       List<DelayedView> delayedEffects, List<String> annualWork, PublicCorrespondence.View correspondence,
+                       List<MidtermCampaign.Contest> midtermContests, List<Implementation> implementations) {
+        public View { promises = List.copyOf(promises); laws = List.copyOf(laws); delayedEffects = List.copyOf(delayedEffects); annualWork = List.copyOf(annualWork); midtermContests = List.copyOf(midtermContests); implementations = List.copyOf(implementations); }
     }
     public Presidency(long seed, int inaugurationYear, Map<Policy.Issue, Policy.Approach> pledges,
                       Set<State.Task> credits, String openingFeedback) {
@@ -47,7 +52,7 @@ public final class Presidency {
             ACTIONS_PER_MONTH - actions, treasury, feedback, support, congress.view(), bill, promises,
             laws.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue()).toList(), lawsPassed, billsVetoed, pending,
             delayed.stream().map(d -> new DelayedView(d.dueMonth, d.effect.message())).toList(),
-            annualWork.stream().map(Object::toString).toList());
+            annualWork.stream().map(Object::toString).toList(), correspondence.view(), midtermCampaign.view(), implementations);
     }
     public Set<CareerCommand.GovernanceAction> annualWork() { return Set.copyOf(annualWork); }
     public Set<State.Task> credits() { return Set.copyOf(credits); }
@@ -79,7 +84,7 @@ public final class Presidency {
         if (a == CareerCommand.GovernanceAction.BUDGET_REVIEW && first) { treasury += 100; messages.add("Annual reconciliation recovered $100; once per administrative year."); }
         if (a == CareerCommand.GovernanceAction.PUBLIC_BRIEFING || a == CareerCommand.GovernanceAction.SERVICE_REVIEW) feedback = a + " completed; the public correspondence log has been updated.";
         if (a == CareerCommand.GovernanceAction.CABINET_MEETING || a == CareerCommand.GovernanceAction.APPOINT_OFFICIAL) support = a + " completed; administration contacts updated.";
-        if (a == CareerCommand.GovernanceAction.CAMPAIGN_ALLIES) support = "Ally campaign commitment completed for this term's midterm scenario.";
+        if (a == CareerCommand.GovernanceAction.CAMPAIGN_ALLIES) support = "General ally meeting recorded; specific midterm visits must be completed on the contest board.";
         if (a == CareerCommand.GovernanceAction.FUNDRAISE) messages.add("Private donor meeting recorded. No public money was transferred to the campaign.");
         if (a == CareerCommand.GovernanceAction.REST) messages.add("Personal time reserved; no policy or campaign objective credited.");
         return messages;
@@ -95,6 +100,17 @@ public final class Presidency {
             return List.of(feedback + " Response cost $" + choice.cost() + ".");
         }
         String problem = actionProblem(0); if (!problem.isEmpty()) throw new IllegalArgumentException(problem);
+        if (c.type() == OfficeCommand.Type.REPLY) {
+            problem = correspondence.replyProblem(c.choice());
+            if (!problem.isEmpty()) throw new IllegalArgumentException(problem);
+            spend(0); feedback = correspondence.reply(c.choice(), months + 1); return List.of(feedback);
+        }
+        if (c.type() == OfficeCommand.Type.MIDTERM_TASK) {
+            problem = midtermCampaign.problem(c.choice(), months);
+            if (!problem.isEmpty()) throw new IllegalArgumentException(problem);
+            spend(0); return List.of(midtermCampaign.complete(c.choice()) + " One monthly action used; no public treasury spent.");
+        }
+        List<String> details = new ArrayList<>();
         Policy.Bill beforeBill = bill;
         switch (c.type()) {
             case PROPOSE -> {
@@ -107,7 +123,15 @@ public final class Presidency {
             }
             case SIGN -> {
                 if (bill == null || !congress.canPass()) throw new IllegalArgumentException("A bill and a chamber majority or negotiated agreement are required.");
-                spend(0); laws.put(bill.issue(), bill.approach()); lawsPassed++;
+                PolicyCatalog.Option option = PolicyCatalog.option(bill.issue(), bill.approach());
+                if (laws.get(bill.issue()) == bill.approach()) throw new IllegalArgumentException("That initiative is already law. Veto this duplicate bill or choose another issue.");
+                if (treasury < option.cost()) throw new IllegalArgumentException("Signing requires $" + option.cost() + " of public operating cash.");
+                spend(option.cost()); laws.put(bill.issue(), bill.approach()); lawsPassed++;
+                Policy.Issue signedIssue = bill.issue();
+                if (implementations.removeIf(i -> i.issue() == signedIssue)) details.add("Previous implementation superseded; spent funds are not refunded.");
+                implementations.add(new Implementation(bill.issue(), bill.approach(), Math.min(48, months + option.deliveryMonths()), option.title()));
+                details.add(option.title() + ": funded for $" + option.cost() + ". " + option.benefit() + ". Tradeoff: " + option.tradeoff() + ".");
+                details.addAll(correspondence.schedule(bill.issue(), bill.approach(), months + 1));
                 feedback = pledges.containsKey(bill.issue()) ? (pledges.get(bill.issue()) == bill.approach() ? "Campaign promise kept: " : "Supporter correspondence records a broken promise: ") + bill.issue() : "Signed initiative published: " + bill.issue();
                 bill = null; congress.finishBill();
             }
@@ -117,7 +141,8 @@ public final class Presidency {
             }
             default -> throw new IllegalArgumentException("That command is not an office action.");
         }
-        return List.of(c.type() + " completed. " + (c.type() == OfficeCommand.Type.PROPOSE ? bill : beforeBill) + ". " + feedback);
+        details.add(0, c.type() + " completed. " + (c.type() == OfficeCommand.Type.PROPOSE ? bill : beforeBill) + ". " + feedback);
+        return details;
     }
     public List<String> endMonth(int frequency) {
         if (pending != null) throw new IllegalArgumentException("Resolve the event before ending the month.");
@@ -127,8 +152,14 @@ public final class Presidency {
         treasury += RECEIPTS - EXPENSES; months++; actions = 0;
         log.add("Month " + months + " closed: receipts +$100; routine operations -$75; treasury $" + treasury + ".");
         for (DueEffect d : List.copyOf(delayed)) if (d.dueMonth <= months) { treasury += d.effect.treasury(); feedback = d.effect.message(); log.add("FOLLOW-UP: " + feedback); delayed.remove(d); }
+        for (Implementation i : List.copyOf(implementations)) if (i.dueMonth() <= months) {
+            feedback = correspondence.deliver(i.issue(), i.approach(), months);
+            log.add("POLICY DELIVERY: " + feedback); implementations.remove(i);
+        }
+        if (months == 12) log.add("MIDTERM CAMPAIGN OPEN: targeted listening and organizing visits are now available through month 24.");
         if (months == 24) {
-            log.add(congress.midterm(termWork.contains(CareerCommand.GovernanceAction.CAMPAIGN_ALLIES), termWork.contains(CareerCommand.GovernanceAction.PUBLIC_BRIEFING)));
+            log.add(congress.midterm(midtermCampaign));
+            midtermCampaign.view().forEach(c -> log.add(c.name() + ": " + c.outcome() + " (" + c.seats() + " seats)."));
             if (bill != null) bill = new Policy.Bill(bill.issue(), bill.approach(), congress.canPass() ? "Ready for signature" : "Awaiting cross-caucus agreement");
         }
         if (months % 12 == 0 && !annualWork.contains(CareerCommand.GovernanceAction.PUBLIC_BRIEFING)) { feedback = "Annual correspondence records an unanswered request for a public briefing."; log.add(feedback); }

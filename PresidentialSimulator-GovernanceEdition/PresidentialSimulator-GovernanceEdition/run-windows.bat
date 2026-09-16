@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title Presidential Simulator - Monthly Edition
+title Presidential Simulator - Governance Edition
 where java >nul 2>nul
 if errorlevel 1 (
     echo.
@@ -11,14 +11,14 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-if exist monthly.jar (
-    java -jar monthly.jar %*
+if exist governance.jar (
+    java -jar governance.jar %*
 ) else (
     echo Preparing the game. This first run needs a JDK 17 or newer.
     if not exist build mkdir build
     java -m jdk.compiler/com.sun.tools.javac.Main -d build *.java
     if errorlevel 1 (
-        echo Could not build the game. Use the included monthly.jar or install a JDK 17 or newer.
+        echo Could not build the game. Use the included governance.jar or install a JDK 17 or newer.
         pause
         exit /b 1
     )

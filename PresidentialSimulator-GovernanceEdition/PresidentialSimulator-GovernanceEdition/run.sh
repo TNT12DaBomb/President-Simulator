@@ -5,8 +5,8 @@ if ! command -v java >/dev/null 2>&1; then
     printf '%s\n' 'Java was not found. Install Java 17 or newer, then try again.'
     exit 1
 fi
-if [ -f monthly.jar ]; then
-    exec java -jar monthly.jar "$@"
+if [ -f governance.jar ]; then
+    exec java -jar governance.jar "$@"
 fi
 mkdir -p build
 java -m jdk.compiler/com.sun.tools.javac.Main -d build ./*.java

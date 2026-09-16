@@ -11,14 +11,11 @@ public final class Congress {
     public void negotiate() { agreement = true; }
     public boolean canPass() { return house >= 218 && senate >= 51 || agreement; }
     public void finishBill() { agreement = false; }
-    public String midterm(boolean organized, boolean publicRecord) {
-        // Authored scenario branches. These counts are game fixtures, never forecasts.
-        house = organized ? 225 : 210;
-        senate = publicRecord ? 52 : 48;
+    public String midterm(MidtermCampaign campaign) {
+        campaign.resolve(); house = campaign.houseSeats(); senate = campaign.senateSeats();
         agreement = false; midterms++;
-        return "MIDTERMS: authored scenario results: your caucus holds " + house + "/435 House seats and " + senate
-            + "/100 Senate seats. House branch: ally campaign completed = " + organized
-            + "; Senate branch: public briefing completed = " + publicRecord + ". Any bill agreement must be renewed.";
+        return "MIDTERMS: completed contest objectives yield " + house + "/435 House seats and " + senate
+            + "/100 Senate seats for your caucus. Incomplete slates go to the other caucus. Any agreement must be renewed.";
     }
     public void developerToggle() { house = house >= 218 ? 210 : 225; senate = senate >= 51 ? 48 : 52; agreement = false; }
 }

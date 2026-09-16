@@ -198,6 +198,7 @@ public final class CareerEngine {
             if (kept > 0) returnWork.add(State.Task.OUTREACH);
             if (contradicted > 0) { returnWork.remove(State.Task.OUTREACH); history.add("Contradicted campaign promises withhold the inherited outreach objective."); }
             history.add("Term archive: " + presidency.view().lawsPassed() + " laws signed; " + presidency.view().billsVetoed() + " vetoes; promises kept " + kept + ".");
+            presidency.view().correspondence().requests().forEach(r -> history.add("Archived request: " + r.group() + " / " + r.request() + " / " + r.status()));
             presidency.view().laws().forEach(law -> history.add("Archived law: " + law));
             presidency.view().promises().forEach(p -> history.add("Archived promise: " + p.issue() + " / " + p.approach() + " / " + p.status()));
             if (wins >= MAX_TERMS || servedMonths >= MAX_TERMS * MONTHS_PER_TERM) {
@@ -277,6 +278,7 @@ public final class CareerEngine {
             case ADVANCE_MONTH -> endMonth();
             case CHANGE_CONGRESS -> { presidency.toggleCongress(); history.add("Developer chamber fixture changed; existing agreement cleared."); }
             case TRIGGER_EVENT -> presidency.triggerEvent(history);
+            case MIDTERM_START -> scenario(1, 12);
             case MID_FIRST_TERM -> scenario(1, 24);
             case MID_SECOND_TERM -> scenario(2, 24);
             case FINAL_QUARTER -> scenario(2, 47);

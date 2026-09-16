@@ -34,10 +34,17 @@ public final class MonthlyTests {
         check(e.view().equals(before) && e.journal().size() == journal, "Rejection doesn't mutate");
         month(e); check(e.view().termMonths() == 1 && e.view().presidency().actionsLeft() == 2, "Explicit month advancement");
         govern(e, CareerCommand.GovernanceAction.CAMPAIGN_ALLIES); govern(e, CareerCommand.GovernanceAction.PUBLIC_BRIEFING);
+        while(e.view().termMonths() < 12) month(e);
+        for (int contest : new int[]{0, 1, 2, 3, 8, 9, 10}) {
+            pending(e);
+            send(e, CareerCommand.office(OfficeCommand.choice(OfficeCommand.Type.MIDTERM_TASK, contest * 2)));
+            send(e, CareerCommand.office(OfficeCommand.choice(OfficeCommand.Type.MIDTERM_TASK, contest * 2 + 1)));
+            month(e);
+        }
         while(e.view().termMonths() < 23) month(e);
         check(e.view().presidency().congress().midterms() == 0, "No early midterm");
         month(e); check(e.view().presidency().congress().midterms() == 1, "Month 24 midterm");
-        check(e.view().presidency().congress().houseSeats() == 225 && e.view().presidency().congress().senateSeats() == 52, "Completed work selects branches");
+        check(e.view().presidency().congress().houseSeats() == 218 && e.view().presidency().congress().senateSeats() == 51, "Targeted contest work wins chamber majorities");
         replay(e);
         while(e.view().phase() == CareerView.Phase.PRESIDENCY) month(e);
         check(e.view().phase() == CareerView.Phase.TERM_REVIEW && e.view().servedMonths() == 48, "Full first term");
@@ -79,7 +86,7 @@ public final class MonthlyTests {
         for(int i=0;i<4;i++) send(loss, CareerCommand.rebuild(CareerCommand.RebuildAction.PRIVATE_LIFE));
         send(loss, CareerCommand.runAgain()); check(loss.view().campaign().playerFunds() == 1400, "Unresolved loss withholds 200 from fundraiser start");
         replay(loss);
-        for(CareerCommand.DeveloperAction d : List.of(CareerCommand.DeveloperAction.MID_FIRST_TERM, CareerCommand.DeveloperAction.MID_SECOND_TERM, CareerCommand.DeveloperAction.FINAL_QUARTER, CareerCommand.DeveloperAction.REELECTION_START)) {
+        for(CareerCommand.DeveloperAction d : List.of(CareerCommand.DeveloperAction.MIDTERM_START, CareerCommand.DeveloperAction.MID_FIRST_TERM, CareerCommand.DeveloperAction.MID_SECOND_TERM, CareerCommand.DeveloperAction.FINAL_QUARTER, CareerCommand.DeveloperAction.REELECTION_START)) {
             CareerEngine dev = fresh(77); send(dev, CareerCommand.dev(d)); replay(dev);
             if(dev.view().phase() == CareerView.Phase.PRESIDENCY) { send(dev, CareerCommand.dev(CareerCommand.DeveloperAction.FINISH_TERM)); replay(dev); }
         }

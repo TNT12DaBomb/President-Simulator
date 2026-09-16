@@ -5,7 +5,7 @@ public final class PresidentialSimulator {
     public static void main(String[] args) {
         long seed = System.nanoTime();
         boolean gui = true, color = false;
-        Path save = Path.of("saves", "career.save");
+        Path save = Path.of("saves", "monthly.save");
         try {
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
@@ -21,7 +21,7 @@ public final class PresidentialSimulator {
         new TextUI(System.in, System.out, seed, save, gui, color).run();
     }
     private static void usage() {
-        System.out.println("Presidential Simulator - Career Edition");
+        System.out.println("Presidential Simulator - Monthly Edition");
         System.out.println("Start without options for the guided menu.");
         System.out.println("Options: --seed <integer>  --save <file>  --no-gui  --color  --help");
     }

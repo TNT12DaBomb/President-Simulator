@@ -9,7 +9,7 @@ import java.util.Properties;
 
 /** Career replay persistence; imports the supplied campaign-events-v1 format. */
 public final class CareerSave {
-    public static final String FORMAT = "presidency-career-v1";
+    public static final String FORMAT = "presidency-monthly-v1";
     private CareerSave() { }
     public static void write(CareerEngine engine, Path destination) throws IOException {
         Properties data = new Properties();
@@ -28,6 +28,13 @@ public final class CareerSave {
                 data.setProperty(prefix + "campaign.choice", Integer.toString(c.choice()));
                 if (c.state() != null) data.setProperty(prefix + "campaign.state", c.state());
                 if (c.task() != null) data.setProperty(prefix + "campaign.task", c.task().name());
+            }
+            if (command.office() != null) {
+                OfficeCommand o = command.office();
+                data.setProperty(prefix + "office.type", o.type().name());
+                data.setProperty(prefix + "office.choice", Integer.toString(o.choice()));
+                if (o.issue() != null) data.setProperty(prefix + "office.issue", o.issue().name());
+                if (o.approach() != null) data.setProperty(prefix + "office.approach", o.approach().name());
             }
             if (command.governance() != null) data.setProperty(prefix + "governance", command.governance().name());
             if (command.rebuild() != null) data.setProperty(prefix + "rebuild", command.rebuild().name());
@@ -55,7 +62,7 @@ public final class CareerSave {
             }
             return imported;
         }
-        if (!FORMAT.equals(data.getProperty("format"))) throw new IOException("Unsupported save version.");
+        if (!FORMAT.equals(data.getProperty("format"))) throw new IOException("Unsupported save version. Quarterly career saves require the Career Edition; keep them unchanged. Campaign-events-v1 imports are supported.");
         try {
             int count = Integer.parseInt(required(data, "commands"));
             if (count < 0 || count > CareerEngine.MAX_COMMANDS) throw new IllegalArgumentException("Invalid command count");
@@ -72,10 +79,17 @@ public final class CareerSave {
                         Integer.parseInt(required(data, prefix + "campaign.choice")));
                 }
                 String governance = data.getProperty(prefix + "governance"), rebuild = data.getProperty(prefix + "rebuild"), developer = data.getProperty(prefix + "developer");
+                OfficeCommand office = null;
+                if (data.containsKey(prefix + "office.type")) {
+                    String issue = data.getProperty(prefix + "office.issue"), approach = data.getProperty(prefix + "office.approach");
+                    office = new OfficeCommand(OfficeCommand.Type.valueOf(required(data, prefix + "office.type")),
+                        issue == null ? null : Policy.Issue.valueOf(issue), approach == null ? null : Policy.Approach.valueOf(approach),
+                        Integer.parseInt(required(data, prefix + "office.choice")));
+                }
                 CareerCommand command = new CareerCommand(type, campaign,
                     governance == null ? null : CareerCommand.GovernanceAction.valueOf(governance),
                     rebuild == null ? null : CareerCommand.RebuildAction.valueOf(rebuild),
-                    developer == null ? null : CareerCommand.DeveloperAction.valueOf(developer));
+                    developer == null ? null : CareerCommand.DeveloperAction.valueOf(developer), office);
                 CareerReport result = engine.submit(command);
                 if (!result.accepted()) throw new IllegalArgumentException("Command " + (i + 1) + " rejected: " + result.messages().get(0));
             }

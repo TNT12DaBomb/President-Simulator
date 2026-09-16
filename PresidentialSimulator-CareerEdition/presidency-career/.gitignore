@@ -1,6 +1,0 @@
-build/
-release-build/
-*.class
-saves/
-*.tmp
-career.jar

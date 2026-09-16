@@ -1,0 +1,25 @@
+PRESIDENTIAL SIMULATOR — MONTHLY EDITION
+
+1. Extract the whole ZIP into a folder you can write to.
+2. Install Java 17 or newer if it is not already available.
+3. Windows: double-click run-windows.bat.
+   macOS/Linux: open a terminal in this folder and run: sh run.sh
+4. Type menu numbers and press Enter. Zero goes back or opens the menu.
+
+The included monthly.jar is ready to run. No separate libraries are needed.
+To start directly: java -jar monthly.jar
+
+To try the presidency quickly:
+Start a career → Game menu (0) → Developer tools (2) →
+Force current election outcome (1) → Force victory (1).
+Confirm, continue through election review, then take office.
+Shortcuts mark the save as a developer run.
+
+Take up to two actions each month, then choose End month (6).
+Midterms follow month 24. A term has 48 months. Complete two terms to retire.
+
+Autosaves and three manual save slots are in the saves folder.
+Old quarterly Career Edition saves require the old edition and are kept separate.
+
+README.md explains the current rules and limitations.
+BACKLOG.md tracks future work; most detailed simulation systems remain future work.

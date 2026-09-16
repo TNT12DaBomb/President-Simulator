@@ -6,11 +6,11 @@ import java.util.Set;
 
 /** Campaign-to-presidency state machine. No console, GUI, or filesystem dependencies. */
 public final class CareerEngine {
-    public static final int QUARTERS_PER_TERM = 16;
+    public static final int MONTHS_PER_TERM = 48;
     public static final int MAX_TERMS = 2;
     public static final int MAX_COMMANDS = 10_000;
-    public static final int RECEIPTS = 250;
-    public static final int ROUTINE_EXPENSES = 200;
+    public static final int RECEIPTS = 100;
+    public static final int ROUTINE_EXPENSES = 75;
     private final long seed;
     private final President.Difficulty difficulty;
     private final President.RunningMate mate;
@@ -21,10 +21,13 @@ public final class CareerEngine {
     private final EnumSet<State.Task> transitionCredits = EnumSet.noneOf(State.Task.class);
     private final EnumSet<State.Task> returnWork = EnumSet.noneOf(State.Task.class);
     private GameEngine campaign;
+    private Presidency presidency;
+    private int eventFrequency = 1;
+    private final java.util.Map<Policy.Issue, Policy.Approach> pledges = new java.util.EnumMap<>(Policy.Issue.class);
     private CareerView.Phase phase = CareerView.Phase.CAMPAIGN;
     private ElectionResult latestResult;
     private String latestOutcome = "";
-    private int year = 1, cycle = 1, wins, losses, completedTerms, termQuarters, servedQuarters, comebackYears;
+    private int year = 1, cycle = 1, wins, losses, completedTerms, termMonths, servedMonths, comebackYears;
     private int treasury = 1200;
     private boolean donorReviewDue, campaignReviewDue, communityReconnected, budgetPublished, developerUsed;
     private String publicFeedback = "First campaign: public questions are being collected.";
@@ -51,6 +54,23 @@ public final class CareerEngine {
         } else if (phase == CareerView.Phase.RETIRED) return reject("This career has ended. Start a new career or use a developer scenario.");
         int start = history.size();
         switch (command.type()) {
+            case OFFICE -> {
+                OfficeCommand o = command.office();
+                if (o.type() == OfficeCommand.Type.PLEDGE) {
+                    if (phase != CareerView.Phase.CAMPAIGN || campaign.view().pendingEvent() != null) return reject("Pledges are set during an active campaign, after resolving events.");
+                    if (!pledges.containsKey(o.issue()) && pledges.size() >= 2) return reject("Choose at most two campaign priorities.");
+                    if (pledges.containsKey(o.issue())) return reject("That promise is already on the public record and cannot be rewritten during this campaign.");
+                    pledges.put(o.issue(), o.approach()); history.add("Campaign promise recorded: " + o.issue() + " / " + o.approach() + ".");
+                } else if (o.type() == OfficeCommand.Type.EVENT_FREQUENCY) {
+                    eventFrequency = o.choice(); history.add("Presidency event frequency: " + new String[]{"Off", "Every six months", "Every three months"}[eventFrequency] + ". Pending events are retained.");
+                } else {
+                    if (phase != CareerView.Phase.PRESIDENCY) return reject("This command requires an active presidency.");
+                    try {
+                        if (o.type() == OfficeCommand.Type.END_MONTH) endMonth();
+                        else { history.addAll(presidency.office(o)); syncOffice(); }
+                    } catch (IllegalArgumentException ex) { return reject(ex.getMessage()); }
+                }
+            }
             case CAMPAIGN -> {
                 if (phase != CareerView.Phase.CAMPAIGN) return reject("Campaign actions are only available during a campaign.");
                 TurnReport report = campaign.submit(command.campaign());
@@ -66,10 +86,9 @@ public final class CareerEngine {
                 else return reject("There is no transition to continue from this screen.");
             }
             case GOVERN -> {
-                if (phase != CareerView.Phase.PRESIDENCY) return reject("You must be in office to take a quarterly decision.");
-                int price = governanceCost(command.governance());
-                if (treasury + RECEIPTS - ROUTINE_EXPENSES < price) return reject("The treasury cannot cover that action after routine expenses. Continue routine administration to rebuild cash.");
-                govern(command.governance());
+                if (phase != CareerView.Phase.PRESIDENCY) return reject("You must be in office to take a monthly action.");
+                try { govern(command.governance()); }
+                catch (IllegalArgumentException ex) { return reject(ex.getMessage()); }
             }
             case REBUILD -> {
                 if (phase != CareerView.Phase.OPPOSITION || comebackYears >= 4) return reject("Annual rebuilding is only available during the four-year period out of office.");
@@ -99,7 +118,9 @@ public final class CareerEngine {
         return (c.campaign() != null) == (c.type() == CareerCommand.Type.CAMPAIGN)
             && (c.governance() != null) == (c.type() == CareerCommand.Type.GOVERN)
             && (c.rebuild() != null) == (c.type() == CareerCommand.Type.REBUILD)
-            && (c.developer() != null) == (c.type() == CareerCommand.Type.DEVELOPER);
+            && (c.developer() != null) == (c.type() == CareerCommand.Type.DEVELOPER)
+            && (c.office() != null) == (c.type() == CareerCommand.Type.OFFICE)
+            && (c.office() == null || c.office().valid());
     }
     private CareerReport reject(String message) { return new CareerReport(false, List.of(message), view()); }
     private void recordElection(ElectionResult result, Boolean forcedWin) {
@@ -149,53 +170,40 @@ public final class CareerEngine {
     }
     private void beginTerm() {
         phase = CareerView.Phase.PRESIDENCY;
-        termQuarters = 0; annualWork.clear(); returnWork.clear(); budgetPublished = false;
-        treasury = 1200; // Each new term uses a fresh simplified public operating appropriation.
-        history.add("Term " + wins + " begins: sixteen quarterly decisions, with a $1,200 public operating appropriation. Campaign money remains separate.");
+        termMonths = 0; annualWork.clear(); returnWork.clear(); budgetPublished = false;
+        presidency = new Presidency(seed + cycle * 7919L, 2028 + year, pledges, transitionCredits, publicFeedback);
+        syncOffice();
+        history.add("INAUGURATION: term " + wins + " begins. 48 monthly turns, two actions each month; end the month explicitly. Midterms follow month 24.");
     }
-    private State.Task creditFor(CareerCommand.GovernanceAction action) {
-        return switch (action) {
-            case PUBLIC_BRIEFING -> State.Task.TOWN_HALL;
-            case CABINET_MEETING -> State.Task.FIELD_OFFICE;
-            case SERVICE_REVIEW -> State.Task.OUTREACH;
-            default -> null;
-        };
-    }
-    private int governanceCost(CareerCommand.GovernanceAction action) {
-        State.Task credit = creditFor(action);
-        if (credit != null && transitionCredits.contains(credit)) return action == CareerCommand.GovernanceAction.SERVICE_REVIEW ? 75 : 0;
-        return action.cost();
+    private int governanceCost(CareerCommand.GovernanceAction action) { return presidency == null ? action.cost() : presidency.cost(action); }
+    private void syncOffice() {
+        Presidency.View p = presidency.view(); treasury = p.treasury(); publicFeedback = p.publicFeedback(); support = p.support();
+        annualWork.clear(); annualWork.addAll(presidency.annualWork());
+        transitionCredits.clear(); transitionCredits.addAll(presidency.credits());
     }
     private void govern(CareerCommand.GovernanceAction action) {
-        if (termQuarters % 4 == 0) annualWork.clear();
-        int cost = governanceCost(action);
-        treasury += RECEIPTS - ROUTINE_EXPENSES - cost;
-        boolean firstThisYear = annualWork.add(action);
-        State.Task credit = creditFor(action);
-        if (credit != null) transitionCredits.remove(credit);
-        history.add("Term " + wins + ", quarter " + (termQuarters + 1) + ": " + action + ". Receipts +$250; routine costs -$200; action -$" + cost + ".");
-        if (action == CareerCommand.GovernanceAction.BUDGET_REVIEW && firstThisYear) {
-            treasury += 100;
-            history.add("Annual reconciliation recovered a $100 duplicate supplier payment. It cannot be recovered again this year.");
+        history.addAll(presidency.act(action)); syncOffice();
+    }
+    private void endMonth() {
+        history.addAll(presidency.endMonth(eventFrequency));
+        termMonths++; servedMonths++; syncOffice();
+        if (termMonths % 12 == 0) {
+            captureAnnualRecord(); year++;
+            history.add("Annual record closed. Completed work: " + annualDescription() + ".");
         }
-        if (action == CareerCommand.GovernanceAction.PUBLIC_BRIEFING) publicFeedback = "A public briefing was published in career year " + year + "; questions remain in the correspondence log.";
-        if (action == CareerCommand.GovernanceAction.CABINET_MEETING) support = "Cabinet coordination notes were distributed in career year " + year + ".";
-        termQuarters++; servedQuarters++;
-        if (termQuarters % 4 == 0) {
-            captureAnnualRecord();
-            year++;
-            history.add("Annual record closed. Treasury $" + treasury + ". Completed work: " + annualDescription() + ".");
-            if (termQuarters < QUARTERS_PER_TERM) annualWork.clear();
-        }
-        if (termQuarters == QUARTERS_PER_TERM) {
+        if (termMonths == MONTHS_PER_TERM) {
             completedTerms++;
-            if (wins >= MAX_TERMS || servedQuarters >= MAX_TERMS * QUARTERS_PER_TERM) {
+            long kept = presidency.view().promises().stream().filter(p -> p.status().equals("Kept")).count();
+            long contradicted = presidency.view().promises().stream().filter(p -> p.status().startsWith("Contradicted")).count();
+            if (kept > 0) returnWork.add(State.Task.OUTREACH);
+            if (contradicted > 0) { returnWork.remove(State.Task.OUTREACH); history.add("Contradicted campaign promises withhold the inherited outreach objective."); }
+            history.add("Term archive: " + presidency.view().lawsPassed() + " laws signed; " + presidency.view().billsVetoed() + " vetoes; promises kept " + kept + ".");
+            presidency.view().laws().forEach(law -> history.add("Archived law: " + law));
+            presidency.view().promises().forEach(p -> history.add("Archived promise: " + p.issue() + " / " + p.approach() + " / " + p.status()));
+            if (wins >= MAX_TERMS || servedMonths >= MAX_TERMS * MONTHS_PER_TERM) {
                 phase = CareerView.Phase.RETIRED;
-                history.add("Eight years in office completed. The career ends at the two-term limit; a third campaign is unavailable.");
-            } else {
-                phase = CareerView.Phase.TERM_REVIEW;
-                history.add("Four-year term complete. Review your record, then run again or retire. The completed final-year record determines inherited campaign preparation.");
-            }
+                history.add("Eight years of service complete. The two-term career limit has been reached.");
+            } else { phase = CareerView.Phase.TERM_REVIEW; history.add("Four-year term complete. Review your record, then run again or retire."); }
         }
     }
     private String annualDescription() {
@@ -248,14 +256,14 @@ public final class CareerEngine {
         phase = CareerView.Phase.CAMPAIGN;
         history.add("Campaign " + cycle + " begins in career year " + year + "."); history.addAll(reasons);
         // Carryover is consumed once; it is rebuilt by the next term or opposition period.
-        returnWork.clear(); budgetPublished = false;
+        returnWork.clear(); budgetPublished = false; pledges.clear();
     }
     private String developerProblem(CareerCommand.DeveloperAction action) {
         return switch (action) {
             case FORCE_WIN, FORCE_LOSS -> phase != CareerView.Phase.CAMPAIGN ? "Force an outcome only from an active campaign."
                 : action == CareerCommand.DeveloperAction.FORCE_WIN && wins >= MAX_TERMS ? "Two victories already recorded." : "";
             case ADD_CAMPAIGN_CASH -> phase != CareerView.Phase.CAMPAIGN ? "Campaign cash is available only during a campaign." : "";
-            case ADD_TREASURY, FINISH_TERM -> phase != CareerView.Phase.PRESIDENCY ? "This developer action requires an active presidency." : "";
+            case ADD_TREASURY, FINISH_TERM, ADVANCE_MONTH, CHANGE_CONGRESS, TRIGGER_EVENT -> phase != CareerView.Phase.PRESIDENCY ? "This developer action requires an active presidency." : (action == CareerCommand.DeveloperAction.TRIGGER_EVENT || action == CareerCommand.DeveloperAction.ADVANCE_MONTH) && presidency.view().pendingEvent() != null ? "Resolve the pending event first." : "";
             default -> "";
         };
     }
@@ -264,44 +272,57 @@ public final class CareerEngine {
             case FORCE_WIN -> recordElection(null, true);
             case FORCE_LOSS -> recordElection(null, false);
             case ADD_CAMPAIGN_CASH -> { campaign.developerGrantFunds(); history.add("Campaign cash +$500."); }
-            case ADD_TREASURY -> { treasury += 500; history.add("Public treasury +$500."); }
-            case FINISH_TERM -> { while (phase == CareerView.Phase.PRESIDENCY) govern(CareerCommand.GovernanceAction.ROUTINE_QUARTER); }
-            case MID_FIRST_TERM -> scenario(1, 8);
-            case MID_SECOND_TERM -> scenario(2, 8);
-            case FINAL_QUARTER -> scenario(2, 15);
-            case REELECTION_START -> { scenario(1, 15); govern(CareerCommand.GovernanceAction.BUDGET_REVIEW); startNextCampaign(); }
+            case ADD_TREASURY -> { presidency.grantFunds(); syncOffice(); history.add("Public treasury +$500."); }
+            case FINISH_TERM -> finishTerm();
+            case ADVANCE_MONTH -> endMonth();
+            case CHANGE_CONGRESS -> { presidency.toggleCongress(); history.add("Developer chamber fixture changed; existing agreement cleared."); }
+            case TRIGGER_EVENT -> presidency.triggerEvent(history);
+            case MID_FIRST_TERM -> scenario(1, 24);
+            case MID_SECOND_TERM -> scenario(2, 24);
+            case FINAL_QUARTER -> scenario(2, 47);
+            case REELECTION_START -> { scenario(1, 47); finishTerm(); startNextCampaign(); }
         }
     }
-    private void scenario(int term, int quarter) {
-        wins = term; losses = 0; completedTerms = term - 1; termQuarters = quarter;
-        servedQuarters = (term - 1) * 16 + quarter; year = 1 + servedQuarters / 4; cycle = term;
-        comebackYears = 0; treasury = 1200; donorReviewDue = false; campaignReviewDue = false; communityReconnected = false;
-        budgetPublished = false; returnWork.clear(); annualWork.clear(); transitionCredits.clear(); elections.clear();
+    private void finishTerm() {
+        while (phase == CareerView.Phase.PRESIDENCY) {
+            if (presidency.view().pendingEvent() != null) { history.addAll(presidency.office(OfficeCommand.choice(OfficeCommand.Type.EVENT_CHOICE, 1))); syncOffice(); }
+            endMonth();
+        }
+    }
+    private void scenario(int term, int month) {
+        wins = term; losses = 0; completedTerms = term - 1; servedMonths = (term - 1) * 48;
+        year = 1 + servedMonths / 12; cycle = term; comebackYears = 0;
+        donorReviewDue = false; campaignReviewDue = false; communityReconnected = false;
+        budgetPublished = false; returnWork.clear(); annualWork.clear(); transitionCredits.clear(); elections.clear(); pledges.clear();
         latestResult = null; latestOutcome = "WIN";
         campaign = new GameEngine(seed + (cycle - 1L) * 104729L, difficulty, mate);
         for (int i = 1; i <= term; i++) elections.add(new CareerView.ElectionSummary(i, (i - 1) * 4 + 1, "WIN", true, null, null,
             List.of("Developer fixture; electoral tally bypassed.")));
-        publicFeedback = "Developer fixture: public briefings in this partial year are not completed.";
-        support = "Developer fixture: cabinet coordination in this partial year is not completed.";
-        phase = CareerView.Phase.PRESIDENCY;
-        history.add("Timeline replaced with a developer fixture. Simulated prior service: " + servedQuarters + " quarters; active term " + term + ". Earlier log entries are retained only as development history.");
+        publicFeedback = "Developer scenario: no campaign work was completed.";
+        beginTerm();
+        for (int i = 0; i < month; i++) {
+            if (presidency.view().pendingEvent() != null) history.addAll(presidency.office(OfficeCommand.choice(OfficeCommand.Type.EVENT_CHOICE, 1)));
+            endMonth();
+        }
+        history.add("Timeline replaced with developer fixture; prior entries are development history. Service: " + servedMonths + " months.");
     }
     public CareerView view() {
         List<CareerView.GovernanceOption> options = new ArrayList<>();
         for (CareerCommand.GovernanceAction action : CareerCommand.GovernanceAction.values()) {
             int cost = governanceCost(action);
             String reason = phase != CareerView.Phase.PRESIDENCY ? "You are not currently in office."
-                : treasury + RECEIPTS - ROUTINE_EXPENSES < cost ? "Insufficient treasury after routine costs." : "";
+                : presidency.actionProblem(cost);
             options.add(new CareerView.GovernanceOption(action, cost, reason.isEmpty(), reason));
         }
         String reputation = losses == 0 ? (wins == 0 ? "First-time candidate; no election result recorded." : "An elected term is on the career record.")
             : "Past election loss remains on record. " + (campaignReviewDue ? "Campaign review outstanding." : "Campaign review published.");
         String economy = (treasury >= ROUTINE_EXPENSES ? "Cash reserve covers the next routine operating bill. " : "Cash reserve is below the routine operating bill. ")
             + (annualWork.contains(CareerCommand.GovernanceAction.BUDGET_REVIEW) ? "Annual accounts reconciled." : "Annual reconciliation pending.");
-        return new CareerView(phase, year, cycle, wins, losses, completedTerms, termQuarters, servedQuarters, comebackYears,
+        return new CareerView(phase, year, cycle, wins, losses, completedTerms, termMonths, servedMonths, comebackYears,
             treasury, RECEIPTS, ROUTINE_EXPENSES, publicFeedback, reputation,
             support + (communityReconnected ? " Community volunteer contacts have been renewed." : ""), economy,
             transitionCredits.stream().map(this::transitionDescription).toList(), annualWork.stream().map(Object::toString).toList(),
-            nextCampaignEffects(), options, elections, history, campaign.view(), developerUsed);
+            nextCampaignEffects(), options, elections, history, campaign.view(), developerUsed, presidency == null ? null : presidency.view(), eventFrequency,
+            pledges.entrySet().stream().map(e -> new Policy.Promise(e.getKey(), e.getValue(), "Campaign pledge")).toList());
     }
 }

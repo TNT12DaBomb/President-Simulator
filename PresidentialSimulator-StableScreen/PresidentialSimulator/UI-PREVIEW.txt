@@ -1,0 +1,27 @@
+PRESIDENTIAL SIMULATOR | PLAYTEST
+2029-01 / PRESIDENTIAL DESK / TERM 1
+PRESIDENCY | Approval 50.1% | Popularity 54.0% | Capital 65 | Energy 80
+──────────────────────────────────────────────────────────────────────────────────────────────────
+  Actions 2/2 | Office $1200                       House 222/435 | Senate 49/100
+  Growth 2.0% | Unemployment 4.5% | Inflation 2.5%
+  ────────────────────────────────────────────────────────────────────────────────────────────
+  No response due. 0 world follow-up(s) scheduled.
+  ────────────────────────────────────────────────────────────────────────────────────────────
+  1  Office & administration
+  2  Legislative agenda
+  3  Public & personal
+  4  Party & elections
+  5  Statistics & records
+  6  End month
+  7  Pending decision
+  0  Game menu
+
+
+
+
+
+
+
+──────────────────────────────────────────────────────────────────────────────────────────────────
+Page 1/1 >/< ? Help ST Stats                                                    
+Presidential desk > 

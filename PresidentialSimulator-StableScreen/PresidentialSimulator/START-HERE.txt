@@ -1,0 +1,24 @@
+PRESIDENTIAL SIMULATOR — INTERFACE PLAYTEST
+
+1. Extract the whole ZIP into a writable folder.
+2. Install Java 17 or newer if needed.
+3. Windows: double-click run-windows.bat.
+   macOS/Linux: run sh run.sh.
+4. Choose How to Play for short guides, or Start a new career.
+
+Type a number and press Enter. No terminal commands are needed inside the game.
+? opens help. ST opens statistics. 0 goes back or opens the game menu.
+> and < move through long screens. Descriptions are never cut off.
+
+Live debates show an updating countdown in a fixed footer.
+On Windows, use run-windows.bat for the anchored full-screen display.
+Plain transcript mode intentionally omits intermediate timer ticks.
+Select AND confirm your answer before time expires.
+Menus, help, stats and details pause the clock.
+Settings -> 5 disables real-time pressure.
+
+Game menu -> Save / load creates named checkpoints.
+Game menu -> Leave or end career -> Save and exit closes safely.
+
+This build starts fresh. Older saves are not supported.
+Read README.md for details. Default screen: 100 columns by 28 rows.

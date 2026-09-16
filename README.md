@@ -1,121 +1,74 @@
-# Presidential Simulator — Career Edition
+# Presidential Simulator — Monthly Edition
 
-This release extends the campaign-events game into a continuing presidential career. The campaign remains a guided text game, but the rules now run through a UI-independent career state machine that a future GUI can use directly.
+A playable career skeleton built from the latest twenty supplied Java files. Requires Java 17 or newer; no external libraries. Includes the executable `monthly.jar`, all source, tests, launchers, and a categorized backlog.
 
 ## Start playing
 
-On Windows, extract the ZIP and double-click `run-windows.bat`. On macOS or Linux, run `sh run.sh`. The included `career.jar` requires a Java 17+ runtime. It starts the guided menu; players choose numbered options and press Enter. Read `START-HERE.txt` for a short first-use guide.
+Extract the entire ZIP into a writable folder. On Windows, double-click `run-windows.bat`. On macOS/Linux, open a terminal in that folder and run `sh run.sh`. Alternatively run `java -jar monthly.jar`. All gameplay uses numbered menus; no commands need to be memorized. `0` returns or opens the game menu. Optional color: `sh run.sh --color`. Repeatable new career: `sh run.sh --seed 42 --no-gui`.
 
-The launcher prefers `career.jar`. After editing source, run `build-windows.bat` or `sh build.sh` to rebuild it. A JDK 17+ is required for rebuilding. No external libraries or internet connection are required.
+## What this milestone delivers
 
-## Career loop
+Campaign → election review → transition → inauguration → 48 monthly turns → midterms after month 24 → term review → another campaign → second inauguration → retirement after 96 total months of service. Losing opens four annual rebuilding choices, followed by another run. Nonconsecutive terms are allowed; two elected terms is the normal cap.
 
-The career contains these phases:
+The campaign still uses the supplied fictional state-objective board, 16 turns, 36 campaign events, running-mate discounts, and opponent actions. State names and EV totals label a game board; outcomes are not forecasts of real elections. No automatic victory was added to normal play.
 
-1. **Campaign:** the existing 16-turn campaign with fictional objectives, an active opponent, and 36 random events.
-2. **Election review:** the player sees the result and the consequences for the career record.
-3. **Transition:** a winner reviews campaign work that supplies one-use transition resources, then takes office.
-4. **Presidency:** one quarterly administrative decision per quarter for a four-year term.
-5. **Term review:** after four years, the player can run again or retire.
-6. **Opposition/comeback:** after a loss, the player gets four annual rebuilding decisions before running again.
-7. **Retired:** the normal career ends after two elected terms or voluntary retirement.
+Every presidency month permits two actions. **Actions do not advance time: choose End month explicitly.** That settles $100 receipts and $75 operating costs, processes delayed effects, checks midterms, and may open an event. Unused actions expire. Events must be answered before more office actions or time advancement, with a free response available. Save/load/exit remain available during a pending event.
 
-The system allows a comeback after a lost election and allows nonconsecutive terms. Two election victories are the traditional eight-year limit. Dictatorship, wars, scandals, and other extraordinary paths are intentionally reserved for later systems.
+### Menus and action depth
 
-A natural loss remains in the career history. Until the player takes the donor-meeting rebuilding action, the next campaign starts with $200 less. Campaign review changes the public record, community work prepares an outreach objective, and final-year governing work can prepare campaign objectives or a fictional fundraising benefit. These effects are visible on the Career Status screen.
+| Menu | Working mechanics |
+| --- | --- |
+| Office & administration | Cabinet coordination, annual reconciliation, service review, appointment and preparedness hooks |
+| Legislative agenda | Eight issue areas; propose, negotiate, sign, veto; one active bill at a time |
+| Public & personal | Briefings, visits, personal time; all recorded and limited by monthly actions |
+| Party & elections | Ally campaign commitment for the midterm branch; donor-meeting hook |
+| Statistics & records | Operating accounts, Congress, promises, signed initiatives, vetoes, follow-ups, full career journal |
+| Game menu | Autosave, three manual slots, load, new game via title, settings, developer tools, retirement, exit |
 
-## Presidential framework
+Visits, appointments, preparedness, donor meetings, and rest are shallow hooks with costs/action use and history entries. They do not yet simulate appointments requiring confirmation, active crises, fatigue, or donor fundraising returns. Briefings, cabinet work, budget review, service work, promises, and midterm organizing have additional consequences described below.
 
-The presidency currently focuses on structure and functionality rather than policy simulation. Every quarter, the player chooses one action:
+### Congress and policies
 
-| Action | Effect |
-|---|---|
-| Public briefing | Records public-facing work and improves the feedback description |
-| Cabinet meeting | Records organizational coordination and improves the support description |
-| Budget review | Costs $25; the first review each year recovers a fictional $100 duplicate payment |
-| Service review | Costs $150; records service-delivery administration |
-| Routine administration | No special work; normal receipts and operating expenses still occur |
+Congress begins with your caucus holding 222 of 435 House seats and 49 of 100 Senate seats. A bill requires 218 House seats and 51 Senate seats, or an explicitly negotiated agreement. Negotiation uses one action and grants agreement for one bill; signing or vetoing consumes it. No random legislative pass/fail roll. Midterms or a developer control change cancel existing agreements and refresh the bill's displayed stage.
 
-Each quarter adds $250 in fictional operating receipts and subtracts $200 in routine expenses. A transition credit can pay for one corresponding first action, or reduce the service review by $75. Final-year work can prepare the next campaign. This is an accounting and state-machine framework; it does not claim to model GDP, inflation, employment, or real presidential approval.
+The midterm is deliberately an **authored game scenario**, not an election simulation. Completing an ally campaign commitment before the checkpoint selects 225 House seats; otherwise 210. Completing a public briefing selects 52 Senate seats; otherwise 48. These are transparent placeholder rules for exercising control changes. There are no ideological scores, ideological composition, leadership approval, or probability forecasts.
 
-The dashboard displays public feedback, reputation, support, treasury, economic operating conditions, term progress, and next-campaign effects. It uses descriptive statuses instead of pretending that a small prototype can produce meaningful real-world approval ratings.
+Issue areas: economy, taxes, healthcare, immigration, defense, environment, education, civil rights. Each initiative expands or reorganizes a fictional program. These choices establish a reusable workflow; they do not claim macroeconomic or voter-bloc effects.
 
-## Menus and accessibility
+### Promises and reelection continuity
 
-The player interacts through a small number of commands at a time:
+Record up to two promises from the campaign desk, for free, before the election. Once recorded, a pledge cannot be overwritten during that campaign. Signing its matching approach marks it kept; signing the opposing approach records a contradiction. A later matching law restores its current status, while the reversal remains in history. A new campaign starts a fresh pledge list. Term-end law and pledge details are archived before a new presidency replaces the active model.
 
-- The campaign screen has separate actions, briefing, status, and game-menu choices.
-- State pages show seven states at once and provide search, next, previous, and all-state navigation.
-- State details show objectives, completed work, ownership, costs, and explanations before a player confirms an action.
-- Presidency actions are grouped into public/cabinet and budget/service areas.
-- The 0 option opens the Game Menu from campaign, election, transition, presidency, comeback, and pending-event screens.
-- Browsing, status, help, cancellation, invalid input, and rejected actions are free.
-- Autosave follows accepted commands. Three manual slots are available. Save errors are reported without falsely claiming that a save succeeded.
-- Optional ANSI heading color can be enabled with `--color`; plain text is the default for readable logs and older terminals.
+Completed town hall, field office, and outreach work in states you hold supplies one-use transition credits. The final administrative year's briefing, cabinet, and service records can supply one objective of each corresponding type in the next campaign. Annual budget reconciliation recovers $100 only once per year; published final-year accounts also unlock a $100 fictional private fundraising benefit next campaign. A kept promise supplies an outreach objective; any contradicted promise withholds that outreach carryover. Public treasury is never transferred to campaign cash.
 
-## Developer tools
+The existing defeat consequences remain: loss recorded, review outstanding, and a $200 campaign reserve withheld until donor meetings occur. This release does not yet vary those consequences by loss margin.
 
-The developer menu is intentionally visible in this development build. It can:
+### Presidency events
 
-- Force a win or loss in the active campaign.
-- Jump to the middle of the first term.
-- Start the reelection campaign.
-- Jump to the middle or final quarter of the second term.
-- Add campaign cash or public treasury cash.
-- Finish the active term with routine quarters.
+Six initial events: records backlog, supplier correction, implementation review, building maintenance, archive request, staff training. The implementation review requires a signed law; each event has an earliest month, weight, choices, immediate effects, and optional delayed effects. Each appears at most once per term. Default opportunities every six months; settings can switch to every three months or off. Selection uses the career seed and never rerolls on browsing or reload. Delayed work due beyond the term is settled at term end; no new event is drawn after month 48. Turning events off retains already pending and scheduled effects.
 
-Developer commands are typed commands through the same controller as normal gameplay. They mark the career save with `developerUsed`, and the status screen identifies the run. Scenario jumps are useful for testing future presidency and GUI work without playing every earlier turn. They deliberately replace the active timeline.
+### Saves and developer tools
 
-## Saving and importing
+Autosave follows accepted commands and EOF. Default `saves/monthly.save`; manual slots `saves/monthly-slot-1.save` through `monthly-slot-3.save`. Atomic replacement where supported. Save/load uses versioned deterministic command replay, including pending events, delayed work, settings, and developer actions.
 
-The default autosave is `saves/career.save`. The Game Menu can save to three manual slots. Saves use a versioned, validated command journal rather than Java object deserialization. Loading replays accepted commands with the same seeds, event draws, opponent choices, career phases, and pending event responses.
+**Quarterly `presidency-career-v1` saves are not migrated.** They must be opened with the previous Career Edition; this release rejects them with a clear message and uses different default filenames. `campaign-events-v1` imports remain supported through the load menu (`saves/campaign.save`). Do not intentionally point `--save` at an older career file you want to preserve.
 
-The loader can import the previous campaign-events `campaign.save` format from the same saves directory. The old file remains unchanged. The imported campaign starts a new career record at its current campaign point; earlier elections are not invented.
+Developer tools force campaign victory/defeat; jump to month 25 of either term, the final month of term two, or reelection; grant resources; toggle chamber control; trigger an eligible event; advance one month; or finish a term automatically. Finish-term declines pending events using the free response. All shortcuts mark the save. Scenario jumps replace the active timeline and retain earlier journal entries as development history. They do not fabricate EV totals. Normal term limits are not unlocked.
 
-Change `CareerSave.FORMAT` when changing replay semantics, phase rules, or event-catalog behavior. There is no automatic migration for future format changes beyond the explicitly supported legacy campaign import.
+## Scope boundaries
 
-## Source structure
+Public feedback and organizational support are descriptive; **numerical approval, candidate ratings, national GDP, inflation, unemployment, popular vote, turnout, scandals, wars, voter blocs, and margin-based mandate calculations are not implemented**. Operating cash is not labeled as the national economy. No dictatorship path is included. The milestone establishes the monthly workflow and extension points; larger feature families are tracked in `BACKLOG.md`.
 
-There are 19 production classes in this release:
-
-| File | Responsibility |
-|---|---|
-| `CareerEngine.java` | Campaign-to-presidency state machine, career record, term and comeback rules |
-| `CareerCommand.java` | Typed career/campaign/governance/rebuild/developer commands |
-| `CareerView.java` | Immutable career dashboard for terminal or future GUI |
-| `CareerReport.java` | Accepted/rejected command result |
-| `CareerSave.java` | Versioned career save and legacy campaign import |
-| `CampaignOpening.java` | Validated resources carried into a new campaign |
-| `GameEngine.java` | Campaign turns, opponent, events, objectives, and election result |
-| `TextUI.java` | Guided menus, wrapping, pages, search, confirmation, and display |
-| `GameView.java` | Immutable campaign snapshot |
-| `GameCommand.java` | Typed campaign commands |
-| `TurnReport.java` | Campaign command result |
-| `CampaignEvent.java` / `EventCatalog.java` | Event data and 36 authored events |
-| `President.java` / `State.java` | Campaign resources and immutable state cards |
-| `ElectoralCollege.java` / `ElectionResult.java` | Roster and validated final tally |
-| `ElectionGUI.java` | Existing optional Swing results viewer |
-| `PresidentialSimulator.java` | Launch options and application entry point |
-
-A renderer creates `CareerCommand` objects, sends them to `CareerEngine.submit`, and renders `CareerView` plus `CareerReport.messages()`. It never changes engine fields. `CareerView.campaign()` exposes the campaign snapshot for the state cards and event response screens.
+The calendar starts with inauguration in January 2029. Each campaign is a separate 16-turn interlude between four-year governing blocks. Midterms use the exact halfway checkpoint after 24 months, not a real-world November schedule. No additional presidential service accrues during the campaign interlude.
 
 ## Build and test
 
-```text
-javac -Xlint:all -d build *.java tests/*.java
-java -Djava.awt.headless=true -cp build CareerTests
-java -Djava.awt.headless=true -cp build CareerUITests
-java -Djava.awt.headless=true -cp build EngineTests
+`sh build.sh` or `build-windows.bat` rebuilds `monthly.jar` with JDK 17+. Launch scripts prefer the included JAR; rebuild after editing source.
+
+```sh
+java -m jdk.compiler/com.sun.tools.javac.Main -Xlint:all -d test-build ./*.java tests/*.java
+java -cp test-build EngineTests
+java -cp test-build MonthlyTests
 ```
 
-If `javac` is unavailable but Java's compiler module is present, use:
-
-```text
-java -m jdk.compiler/com.sun.tools.javac.Main -Xlint:all -d build *.java tests/*.java
-```
-
-Validation covers natural wins/losses, election-review transitions, transition credits, quarterly ledgers, final-year carryover, loss reputation and donor withholding, four-year comeback, nonconsecutive terms, two-term cap, developer jumps, save/load, legacy import, invalid commands, manual menus, pending events, and save failures. See `ARCHITECTURE.md`, `EVENTS.md`, and `VALIDATION.md`.
-
-## Boundaries for later work
-
-The structure is intentionally ready for additional presidency systems. Later additions can introduce policy, scandals, wars, crises, approval/reputation numbers, legislative support, and a dictator path as new commands, event effects, or phase rules. The current version establishes the lifecycle and interfaces without pretending those systems already exist.
+See `ARCHITECTURE.md` for model boundaries and `VALIDATION.md` for what was checked.

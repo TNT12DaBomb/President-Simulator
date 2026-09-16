@@ -31,9 +31,15 @@ public final class GameEngine {
     private Pending pending;
 
     public GameEngine(long seed, President.Difficulty difficulty, President.RunningMate mate) {
-        this(seed, difficulty, mate, EventCatalog.all());
+        this(seed, difficulty, mate, EventCatalog.all(), CampaignOpening.fresh());
     }
     GameEngine(long seed, President.Difficulty difficulty, President.RunningMate mate, List<CampaignEvent> catalog) {
+        this(seed, difficulty, mate, catalog, CampaignOpening.fresh());
+    }
+    public GameEngine(long seed, President.Difficulty difficulty, President.RunningMate mate, CampaignOpening opening) {
+        this(seed, difficulty, mate, EventCatalog.all(), opening);
+    }
+    private GameEngine(long seed, President.Difficulty difficulty, President.RunningMate mate, List<CampaignEvent> catalog, CampaignOpening opening) {
         this.seed = seed; this.difficulty = Objects.requireNonNull(difficulty); this.mate = Objects.requireNonNull(mate);
         college = new ElectoralCollege(seed);
         player = new President((difficulty == President.Difficulty.HARD ? 1000 : 1400) + (mate == President.RunningMate.FUNDRAISER ? 200 : 0), mate);
@@ -42,8 +48,16 @@ public final class GameEngine {
         opponentRandom = new Random(seed ^ 0x0B07L);
         this.catalog = List.copyOf(catalog);
         if (catalog.stream().map(CampaignEvent::id).distinct().count() != catalog.size()) throw new IllegalArgumentException("Duplicate event IDs");
+        Objects.requireNonNull(opening);
+        for (CampaignOpening.Work work : opening.completedWork()) {
+            State target = state(work.state());
+            if (target == null || !target.getObjectives().contains(work.task())) throw new IllegalArgumentException("Invalid inherited work");
+        }
+        player.changeFunds(opening.cashAdjustment());
+        for (CampaignOpening.Work work : opening.completedWork()) player.complete(work.state(), work.task());
         history.add("Campaign opened. Seed " + seed + "; " + difficulty + "; running mate " + mate + ".");
         history.add("Starting funds: you $" + player.getFunds() + ", opponent $" + opponent.getFunds() + ".");
+        history.addAll(opening.reasons());
     }
     public long seed() { return seed; }
     public President.Difficulty difficulty() { return difficulty; }
@@ -251,6 +265,10 @@ public final class GameEngine {
             + " (" + (m.throughTurn() - turn) + " turn(s) left)").toList();
         return new GameView(seed, turn, President.CAMPAIGN_TURNS, player.getFunds(), opponent.getFunds(), ev, 538 - ev, complete,
             views, active, eventView, history, fundraising(CampaignEvent.Side.PLAYER, turn + 1));
+    }
+    void developerGrantFunds() {
+        player.changeFunds(500);
+        history.add("DEVELOPER: added $500 campaign cash.");
     }
     public ElectionResult result() {
         if (!view().complete()) throw new IllegalStateException("Finish turns and pending events first");

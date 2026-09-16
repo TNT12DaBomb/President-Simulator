@@ -8,9 +8,9 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-java -m jdk.jartool/sun.tools.jar.Main --create --file campaign.jar --main-class PresidentialSimulator -C release-build .
+java -m jdk.jartool/sun.tools.jar.Main --create --file career.jar --main-class PresidentialSimulator -C release-build .
 if errorlevel 1 (
-    echo Could not package campaign.jar.
+    echo Could not package career.jar.
     pause
     exit /b 1
 )

@@ -1,104 +1,121 @@
-# Presidential Simulator — Campaign Events Edition
+# Presidential Simulator — Career Edition
 
-A text-based campaign game with 36 fictional events, a working opponent, and a UI-independent Java engine. This release builds on the six-class objective-based revision you supplied. The underlying state objectives are invented game rules, not real political data or election forecasts.
+This release extends the campaign-events game into a continuing presidential career. The campaign remains a guided text game, but the rules now run through a UI-independent career state machine that a future GUI can use directly.
 
 ## Start playing
 
-**Windows:** extract the full ZIP, open `campaign-events`, and double-click `run-windows.bat`. Choose a menu number and press Enter. Read `START-HERE.txt` if you are new to the game.
+On Windows, extract the ZIP and double-click `run-windows.bat`. On macOS or Linux, run `sh run.sh`. The included `career.jar` requires a Java 17+ runtime. It starts the guided menu; players choose numbered options and press Enter. Read `START-HERE.txt` for a short first-use guide.
 
-**Mac/Linux:** run `sh run.sh` from the extracted folder.
+The launcher prefers `career.jar`. After editing source, run `build-windows.bat` or `sh build.sh` to rebuild it. A JDK 17+ is required for rebuilding. No external libraries or internet connection are required.
 
-The included `campaign.jar` needs a Java 17+ runtime, with no external dependencies. A JDK is needed only to rebuild edited source. The launcher prefers the JAR; after editing any Java file, run `build-windows.bat` or `sh build.sh` to include your changes.
+## Career loop
 
-## What's new
+The career contains these phases:
 
-- **36 events:** funding gains/losses, volunteer work, reopened objectives, cost changes, fundraising changes, optional offers, and quiet weeks.
-- **Both campaigns matter:** the opponent has its own money and completed objectives. It acts after every second player turn and can be helped or hurt by events.
-- **16 turns:** expanded from eight to give event choices and temporary effects room to matter.
-- **Guided interface:** welcome screen, short briefing, compact dashboard, seven-state pages, search, state detail, confirmations, and readable recaps.
-- **Save/resume:** autosave after every accepted action and event response, including unanswered offers. Reloading replays the exact accepted decisions with the same random sequence.
-- **GUI-ready rules:** commands enter `GameEngine`; immutable `GameView` snapshots and `TurnReport` messages come out. `TextUI` renders them without owning gameplay rules.
-- **Results:** console details, journal, and the existing optional Swing results window.
+1. **Campaign:** the existing 16-turn campaign with fictional objectives, an active opponent, and 36 random events.
+2. **Election review:** the player sees the result and the consequences for the career record.
+3. **Transition:** a winner reviews campaign work that supplies one-use transition resources, then takes office.
+4. **Presidency:** one quarterly administrative decision per quarter for a four-year term.
+5. **Term review:** after four years, the player can run again or retire.
+6. **Opposition/comeback:** after a loss, the player gets four annual rebuilding decisions before running again.
+7. **Retired:** the normal career ends after two elected terms or voluntary retirement.
 
-## Play loop
+The system allows a comeback after a lost election and allows nonconsecutive terms. Two election victories are the traditional eight-year limit. Dictatorship, wars, scandals, and other extraordinary paths are intentionally reserved for later systems.
 
-1. Pick a difficulty and running mate.
-2. Inspect a state and choose one unfinished objective, or fundraise.
-3. Confirm the turn and any cost. Unavailable actions explain why they cannot run.
-4. Read the recap: your action, the opponent's action when scheduled, and the random event.
-5. Respond to an offer if one appears. This does not consume another turn.
-6. Continue through turn 16, then inspect the final result and journal.
+A natural loss remains in the career history. Until the player takes the donor-meeting rebuilding action, the next campaign starts with $200 less. Campaign review changes the public record, community work prepares an outreach objective, and final-year governing work can prepare campaign objectives or a fictional fundraising benefit. These effects are visible on the Career Status screen.
 
-Browsing, searching, help, invalid input, and cancelled actions are free. An event response must be resolved before another turn or the final election can proceed. Passing a turn still allows the opponent and event steps to happen.
+## Presidential framework
 
-## Board rules
+The presidency currently focuses on structure and functionality rather than policy simulation. Every quarter, the player chooses one action:
 
-The supplied electoral-vote roster is retained: 50 states plus D.C., totalling 538, with 270 required to win. The fictional starting allocation is 186 EV for the player and 352 for the opponent, using the supplied alphabetical starting-bloc rule.
-
-Every state now uses the same two-objective rule for both sides:
-
-| Completed objectives | State ownership |
+| Action | Effect |
 |---|---|
-| Only your campaign has completed both | Yours |
-| Only the opponent has completed both | Opponent's |
-| Both campaigns have completed both | Starting owner |
-| Neither campaign has completed both | Starting owner |
+| Public briefing | Records public-facing work and improves the feedback description |
+| Cabinet meeting | Records organizational coordination and improves the support description |
+| Budget review | Costs $25; the first review each year recovers a fictional $100 duplicate payment |
+| Service review | Costs $150; records service-delivery administration |
+| Routine administration | No special work; normal receipts and operating expenses still occur |
 
-The prior scripted Texas/Illinois challenges have been removed. The opponent can contest states through the same objective rules. Events never assign EV directly; an objective change can change ownership, and the recap names each state that changes hands.
+Each quarter adds $250 in fictional operating receipts and subtracts $200 in routine expenses. A transition credit can pay for one corresponding first action, or reduce the service review by $75. Final-year work can prepare the next campaign. This is an accounting and state-machine framework; it does not claim to model GDP, inflation, employment, or real presidential approval.
 
-All states still use winner-take-all allocation in this game. District-level rules, popular-vote totals, contingent-election play, governing, and reelection are not implemented. A 269–269 tie is explicitly reported without a winner.
+The dashboard displays public feedback, reputation, support, treasury, economic operating conditions, term progress, and next-campaign effects. It uses descriptive statuses instead of pretending that a small prototype can produce meaningful real-world approval ratings.
 
-## Resources and difficulty
+## Menus and accessibility
 
-| Resource rule | Normal | Hard |
-|---|---:|---:|
-| Your starting funds | $1,400 | $1,000 |
-| Opponent starting funds | $1,200 | $1,600 |
-| Campaign length | 16 turns | 16 turns |
-| Opponent cadence | Every second turn | Every second turn |
+The player interacts through a small number of commands at a time:
 
-Base costs are $100 for a town hall, $175 for a field office, and $150 for outreach. Fundraising normally adds $250 and costs a turn. Running mates reduce one action's cost by $50, or add $200 to the starting budget. Cash is a fictional resource, not a representation of real campaign costs.
+- The campaign screen has separate actions, briefing, status, and game-menu choices.
+- State pages show seven states at once and provide search, next, previous, and all-state navigation.
+- State details show objectives, completed work, ownership, costs, and explanations before a player confirms an action.
+- Presidency actions are grouped into public/cabinet and budget/service areas.
+- The 0 option opens the Game Menu from campaign, election, transition, presidency, comeback, and pending-event screens.
+- Browsing, status, help, cancellation, invalid input, and rejected actions are free.
+- Autosave follows accepted commands. Three manual slots are available. Save errors are reported without falsely claiming that a save succeeded.
+- Optional ANSI heading color can be enabled with `--color`; plain text is the default for readable logs and older terminals.
 
-Temporary event effects combine. Action prices cannot fall below $25, fundraising proceeds cannot fall below $50, and mandatory cash losses stop at zero. Optional paid offers must be affordable in full. All effects report their actual consequence.
+## Developer tools
 
-## Event behavior
+The developer menu is intentionally visible in this development build. It can:
 
-One unused, eligible event is selected after each accepted turn. If none is eligible, the game reports that no new event applies. Events do not repeat in a campaign. An event that reopens work is eligible only when that work exists; an event that completes work needs an unfinished matching objective.
+- Force a win or loss in the active campaign.
+- Jump to the middle of the first term.
+- Start the reelection campaign.
+- Jump to the middle or final quarter of the second term.
+- Add campaign cash or public treasury cash.
+- Finish the active term with routine quarters.
 
-State-specific events choose an eligible state. This can strengthen a position without immediately changing ownership. The affected state is always shown. There are no numerical candidate ratings or random vote rolls.
+Developer commands are typed commands through the same controller as normal gameplay. They mark the career save with `developerUsed`, and the status screen identifies the run. Scenario jumps are useful for testing future presidency and GUI work without playing every earlier turn. They deliberately replace the active timeline.
 
-Temporary effects apply to the next two **game turns**, not the next two uses of an action. Because the opponent acts every other turn, a two-turn effect may affect only one opponent action. Timed-effect events are not drawn on the final turn. Cash events can still occur on the final turn; unused final cash does not count toward victory.
+## Saving and importing
 
-See `EVENTS.md` for every event and exact effect.
+The default autosave is `saves/career.save`. The Game Menu can save to three manual slots. Saves use a versioned, validated command journal rather than Java object deserialization. Loading replays accepted commands with the same seeds, event draws, opponent choices, career phases, and pending event responses.
 
-## Saving
+The loader can import the previous campaign-events `campaign.save` format from the same saves directory. The old file remains unchanged. The imported campaign starts a new career record at its current campaign point; earlier elections are not invented.
 
-There is one default slot at `saves/campaign.save`. Starting a new campaign asks before replacing it. A save error is shown without claiming success. The Save and Exit menu returns to the game if saving fails.
+Change `CareerSave.FORMAT` when changing replay semantics, phase rules, or event-catalog behavior. There is no automatic migration for future format changes beyond the explicitly supported legacy campaign import.
 
-A save is a versioned setup plus accepted-command journal. It preserves random events, opponent actions, cash, objectives, temporary effects, and pending responses by replay. This format is intentionally tied to the current game rules and event catalog; it is not a cross-version save migration system.
+## Source structure
 
-## Developer commands
+There are 19 production classes in this release:
+
+| File | Responsibility |
+|---|---|
+| `CareerEngine.java` | Campaign-to-presidency state machine, career record, term and comeback rules |
+| `CareerCommand.java` | Typed career/campaign/governance/rebuild/developer commands |
+| `CareerView.java` | Immutable career dashboard for terminal or future GUI |
+| `CareerReport.java` | Accepted/rejected command result |
+| `CareerSave.java` | Versioned career save and legacy campaign import |
+| `CampaignOpening.java` | Validated resources carried into a new campaign |
+| `GameEngine.java` | Campaign turns, opponent, events, objectives, and election result |
+| `TextUI.java` | Guided menus, wrapping, pages, search, confirmation, and display |
+| `GameView.java` | Immutable campaign snapshot |
+| `GameCommand.java` | Typed campaign commands |
+| `TurnReport.java` | Campaign command result |
+| `CampaignEvent.java` / `EventCatalog.java` | Event data and 36 authored events |
+| `President.java` / `State.java` | Campaign resources and immutable state cards |
+| `ElectoralCollege.java` / `ElectionResult.java` | Roster and validated final tally |
+| `ElectionGUI.java` | Existing optional Swing results viewer |
+| `PresidentialSimulator.java` | Launch options and application entry point |
+
+A renderer creates `CareerCommand` objects, sends them to `CareerEngine.submit`, and renders `CareerView` plus `CareerReport.messages()`. It never changes engine fields. `CareerView.campaign()` exposes the campaign snapshot for the state cards and event response screens.
+
+## Build and test
 
 ```text
-java -jar campaign.jar --seed 42 --no-gui
-java -jar campaign.jar --save saves/second-campaign.save
-java -jar campaign.jar --color
-```
-
-`--color` enables optional ANSI heading colors for compatible terminals. The default uses plain text and avoids cursor-control sequences, so logs and older terminals remain readable.
-
-Compile and run the tests with a JDK 17+:
-
-```text
-javac -Xlint:all -d build *.java tests/EngineTests.java tests/TextUITests.java
+javac -Xlint:all -d build *.java tests/*.java
+java -Djava.awt.headless=true -cp build CareerTests
+java -Djava.awt.headless=true -cp build CareerUITests
 java -Djava.awt.headless=true -cp build EngineTests
-java -Djava.awt.headless=true -cp build TextUITests
 ```
 
-If `javac` is not on PATH but the compiler module is present:
+If `javac` is unavailable but Java's compiler module is present, use:
 
 ```text
-java -m jdk.compiler/com.sun.tools.javac.Main -Xlint:all -d build *.java tests/EngineTests.java tests/TextUITests.java
+java -m jdk.compiler/com.sun.tools.javac.Main -Xlint:all -d build *.java tests/*.java
 ```
 
-There are now **14 production Java files**. Copy the whole source set; replacing only the old six files is insufficient. Remove duplicate filename-suffixed source copies from your build directory. See `ARCHITECTURE.md` for integration and extension points, `REVIEW.md` for design decisions, and `VALIDATION.md` for tested scope.
+Validation covers natural wins/losses, election-review transitions, transition credits, quarterly ledgers, final-year carryover, loss reputation and donor withholding, four-year comeback, nonconsecutive terms, two-term cap, developer jumps, save/load, legacy import, invalid commands, manual menus, pending events, and save failures. See `ARCHITECTURE.md`, `EVENTS.md`, and `VALIDATION.md`.
+
+## Boundaries for later work
+
+The structure is intentionally ready for additional presidency systems. Later additions can introduce policy, scandals, wars, crises, approval/reputation numbers, legislative support, and a dictator path as new commands, event effects, or phase rules. The current version establishes the lifecycle and interfaces without pretending those systems already exist.

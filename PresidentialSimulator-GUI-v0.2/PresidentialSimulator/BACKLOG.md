@@ -1,3 +1,11 @@
+# v0.2 GUI priority update
+
+Delivered: Swing desktop shell, persistent statistics, electoral state board, turn schedule, clickable campaign/world decisions, monotonic live clocks, paused dialogs, campaign-to-career progression, basic office and legislative actions, developer scenarios, manual saves and phase autosaves.
+
+Next: port cabinet/correspondence/midterm commands; searchable geographic map; save metadata/recovery cards; full consequence previews; keyboard/accessibility work; native Windows/macOS testing and packaging. Terminal feature work is frozen. The institutional/realism backlog below remains active; this release changes presentation only.
+
+---
+
 # Backlog — World Edition
 
 ## Stable-screen patch

@@ -1,3 +1,9 @@
+# v0.2 Desktop Prototype
+
+Added DesktopController, DesktopPanel and DesktopLauncher. The default JAR launches Swing; --terminal opens the frozen prototype. Added headless desktop integration checks and three actual UI renders. No gameplay coefficients or engine behavior changed. See GUI-ARCHITECTURE.md and README.md for scope.
+
+---
+
 # World Edition
 
 ## Stable-screen patch

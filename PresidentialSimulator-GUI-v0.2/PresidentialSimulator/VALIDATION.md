@@ -1,3 +1,19 @@
+# v0.2 Desktop validation
+
+- All production and test sources compile under Java 17 with `-Xlint:all`.
+- EngineTests: 673,373 checks; 320 full campaigns.
+- DebateTests: 60 checks.
+- WorldTests: 9,968 checks.
+- InterfaceTests: 85 checks.
+- StableScreenTests: 393 checks.
+- DesktopTests: 14 integration checks: actual action button, campaign election review, inauguration, monthly progression, clock pause/tick/expiry, stale-response rejection, asynchronous save/load and failed-load preservation.
+- Actual Swing panel renders: GUI-CAMPAIGN.png, GUI-DEBATE.png, GUI-OFFICE.png at 1320 × 850; inspected for persistent layout and readable decisions.
+- Built JAR defaults to DesktopLauncher; headless execution prints a useful terminal fallback command.
+
+No native display server is available here. Windows/macOS launchers, focus events, native dialogs, screen readers and live resizing require device testing. Screenshot rendering is not a substitute for those checks. Autosave wiring is implemented; desktop tests exercise the shared asynchronous save path, not every OS shutdown scenario. The previous terminal-only validation is preserved below.
+
+---
+
 # Interface Playtest validation
 
 Java 17 on Linux; 46 production sources compile with UTF-8 and `-Xlint:all` without warnings. The release supports one CURRENT ruleset and only `presidency-interface-v1` career saves. Compatibility suites and old golden fixtures have been retired from this release.

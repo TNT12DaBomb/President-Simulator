@@ -10,4 +10,4 @@ if [ -f presidential-simulator.jar ]; then
 fi
 mkdir -p build
 java -m jdk.compiler/com.sun.tools.javac.Main -encoding UTF-8 -d build ./*.java
-exec java -Dfile.encoding=UTF-8 -cp build PresidentialSimulator "$@"
+exec java -Dfile.encoding=UTF-8 -cp build DesktopLauncher "$@"

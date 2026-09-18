@@ -8,7 +8,7 @@ public final class DesktopLauncher {
         if(GraphicsEnvironment.isHeadless()){System.err.println("A desktop display is required. For terminal play: java -jar presidential-simulator.jar --terminal");return;}
         SwingUtilities.invokeLater(()->{
             UIManager.put("Button.font",new Font(Font.SANS_SERIF,Font.PLAIN,14));
-            DesktopController controller=new DesktopController();controller.autosaveTo(java.nio.file.Path.of(System.getProperty("user.home"),"PresidentialSimulator","saves","autosave.properties"));DesktopPanel panel=new DesktopPanel(controller);JFrame window=new JFrame("Presidential Simulator • v0.7");window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);window.setContentPane(panel);
+            DesktopController controller=new DesktopController();controller.autosaveTo(java.nio.file.Path.of(System.getProperty("user.home"),"PresidentialSimulator","saves","autosave.properties"));DesktopPanel panel=new DesktopPanel(controller);JFrame window=new JFrame("Presidential Simulator • v0.7.1");window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);window.setContentPane(panel);
             Rectangle usable=usableBounds(window.getGraphicsConfiguration().getBounds(),Toolkit.getDefaultToolkit().getScreenInsets(window.getGraphicsConfiguration()));
             window.setBounds(usable.x+8,usable.y+8,Math.max(1,Math.min(1280,usable.width-16)),Math.max(1,Math.min(760,usable.height-16)));
             window.setMinimumSize(new Dimension(Math.min(800,usable.width-16),Math.min(480,usable.height-16)));

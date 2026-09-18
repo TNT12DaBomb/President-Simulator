@@ -1,73 +1,63 @@
-# Presidential Simulator v0.5 — Debate & Interface Edition
+# Presidential Simulator v0.7.1 — Debate Windows
 
-Extract this entire folder. Install Java 17 or newer if needed.
+Extract the ZIP and install Java 17 or newer. On Windows, double-click `run-windows.bat`. On macOS/Linux, run `sh run.sh`. The bundled JAR opens a desktop window. No extra GUI libraries or online account are needed.
 
-- Windows: double-click `run-windows.bat`. The game opens in its own window.
-- macOS/Linux: run `sh run.sh`, or open the JAR with Java if your desktop supports it.
-- Terminal prototype: `java -jar presidential-simulator.jar --terminal`.
-- Source build: `sh build.sh` or `build-windows.bat` (JDK 17+).
-- Tests: `sh test.sh` (JDK 17+).
+## Your campaign
 
-Swing is included with Java; no JavaFX, Maven, network service, account, or extra GUI dependency is required. This is a desktop application, not a hosted website or native installer. Java must already be installed. Windows/macOS device testing is still needed.
+**You are BLUE. Your opponent is RED.** The setup screen, campaign dashboard, persistent header and map identify your team. Blue/red are the current game's team colors; gold marks the selected state. Select a red state to challenge the opponent there, or strengthen work in a blue state. Hover previews and enlarged eastern callouts remain available.
 
-## Start playing
+## Choose a question mode
 
-Choose **New career**, a difficulty and a running mate. The seed makes a run reproducible. **Map** shows state boundaries; hover for information, then select a state to see objectives and action costs in the fixed inspector. Small Northeast states and DC have enlarged callouts. The selector provides a keyboard alternative. Each campaign action spends a turn; fundraising replenishes your resources. Debates occur on turns 4, 8 and 12. Finish the 16-turn campaign to reach election review.
+New career setup offers **Politics** (52 questions) or **Fun** (88 questions). The live bank contains 140 cards. Each appearance selects three distinct topics, preferring unseen questions. Fun now includes literature, music, computing, chemistry, genetics, mathematics, Earth science, space and Star Wars.
 
-New decisions automatically open the **Decisions** page. You can switch back to Map without losing the selected state; a footer reminder remains while a decision is waiting. Click an answer; unavailable choices are disabled. A live response clock counts actual elapsed seconds. Help, modal dialogs, file operations, and switching to another window pause it. Other event deadlines depend on game turns. Settings can disable live countdowns while retaining in-game deadlines.
+Both modes include a separate governing-policy question after the knowledge rounds. Policy preferences are not marked correct or incorrect. The public statement is recorded immediately and follows you into office, even if you leave the debate before the clarification round.
 
-After an election, **Dashboard** continues into transition, presidency or rebuilding. The office offers monthly actions and **End month**. **Policy** exposes pledges and the legislative sequence. Invalid actions display a visible notification immediately. Routine notifications disappear after a short interval; important updates remain until dismissed. Details opens the full update without navigating to another page. Stats remain at the top; **Statistics** contains all metrics and **History** preserves your record.
+## Preparation and team practice
 
-## Saves
+Each debate starts with **6 briefing slots**. Reviewing one topic costs **2 slots**, not campaign cash or a campaign turn. Purchased notes appear before/during the relevant questions. Slots reset at the next debate; repeated note reading is free.
 
-**Menu → Save / Load** offers three named-number slots, quicksave, transition autosave and an open-file picker. Saves live under your home folder in `PresidentialSimulator/saves`. Career phase changes autosave; individual actions do not. Use manual save or **Save and exit** to preserve later actions. Three rotating backup generations accompany replaced saves. Loading replaces the current career only after successful replay; failed reads preserve your session. A failed save leaves the window open with a visible error notification.
+**Practice with your team** is available below the question mode in Settings and during debate preparation. It runs the full debate sequence with a separate session and statement record. It spends no career resources and creates no public commitments. Practice defaults to untimed; enable rehearsal clocks if desired.
 
-File work runs off the Swing event thread, with commands and clocks frozen until it completes. Current saves use presidency-debate-protocol-v2. Earlier saves are intentionally rejected because debate command sequences changed. There is no legacy format migration.
+## Timers, reading and feedback
 
-## Scope and model limits
+| Stage | Standard | Relaxed |
+| --- | --- | --- |
+| Knowledge answer | 30 seconds | 60 seconds |
+| Confidence | 15 seconds | 30 seconds |
+| Opponent delivery | 5 seconds | 10 seconds |
+| Recovery | 20 seconds | 40 seconds |
+| Policy / record | 40 seconds | 80 seconds |
 
-The GUI uses the existing simulation without adding new political scoring. Values describe a fictional game model; electoral projections are not real-world polls. Office funds are administrative resources, not a federal budget. Growth and other national metrics retain the existing model's assumptions (see MODEL-NOTES.md and REALISM-AUDIT.md).
+Preparation, source feedback and debriefs are untimed. Untimed mode removes every debate deadline. Dialogs, file operations and switching windows pause the live career clock.
 
-This release has a bundled geographic map with an independently scrollable state inspector. Geography is a simplified display, not a survey map. Schedule uses actual campaign turns rather than inventing dates or appointments. Office now has dedicated Cabinet, Public requests and Midterms tabs connected to those existing systems. General office actions, legislation, world responses, election reviews and career continuation are connected. Developer scenarios are available and mark the career as modified.
+Correct factual answers receive a green **Well answered** banner, whether challenged or accepted without a challenge. Incorrect answers get a distinct correction; withdrawing a claim gets neutral source review. Feedback separates your original answer from the opponent's claim, which may itself be wrong. It does not score the worth of a candidate or a political position.
 
-## Next GUI milestone
+## Settings
 
-1. Richer cabinet roles, request filtering and more detailed midterm presentation.
-2. Map search, zoom/pan and more state overlays.
-3. Expanded debate content, transcript browsing and accessible large-text presets.
-4. Save-slot metadata cards, backup recovery and configurable autosave frequency.
-5. Keyboard shortcuts, focus/assistive-technology review and Windows/macOS playtesting.
-6. Installer/runtime bundles after device testing; no engine rewrite required.
+Menu → Settings includes question mode, Standard/Relaxed/Untimed pace, the master live-clock switch, debate text size (16–24, default 18), correct-answer celebrations and presidency event frequency. Mode and pace changes apply to the **next** debate; text and feedback style update immediately. Turning off the master clock pauses a current live response. Preferences are included in career saves. Before starting a career, settings become the defaults for the next setup in that app session.
 
-## Seed behavior
+## Governing continuity
 
-The same seed, difficulty, running mate and commands reproduce the same run. A save restores its stored seed and command history. New career setup offers a Randomize seed button.
+Policy → Promises lists debate commitments. In office, **Introduce promised initiative** opens the matching proposal using the normal action allowance. The initiative preview also shows relevant prior statements. Proposals, signatures and vetoes append a comparison with those statements to History. A proposal is not treated as a law already delivered. Numerical reputation/media effects are not added by this release.
 
-The existing model deliberately uses fixed fictional state baselines. The seed changes objectives, event draws, opponent actions and later random variation, but does not randomize the opening baseline. A repeated opening projection therefore does not indicate a broken RNG. This UI release does not change the simulation model or invent a new election forecast. A separately specified alternate scenario system remains backlog work.
+## Saving and building
 
-## Laptop layout
+Menu → Save / Load offers slots, quicksave, autosave and file opening. Phase transitions autosave; use manual save or Save and exit for later actions. Saves live in `PresidentialSimulator/saves` under your home directory. Current format: `presidency-debate-settings-v3`. Old-format saves are intentionally unsupported; their files are not modified by a failed load.
 
-The launcher uses the current monitor's usable bounds and subtracts taskbar/dock insets. It works in Java's logical display coordinates for scaled desktops. The map scales proportionally; detail pages scroll independently. Navigation stays compact with secondary controls under Menu. Automated renders cover 1280×680, 1024×600 and 800×480 content areas. Actual OS chrome, assistive technology and Windows/macOS hardware testing remain necessary; no claim of universal pixel-perfect fit is made.
+Build source with `sh build.sh` or `build-windows.bat` using JDK 17+. Run focused debate tests with `sh test-debates.sh`. Terminal access remains `java -jar presidential-simulator.jar --terminal`; the expanded setup/settings and team-practice screens are desktop features.
 
-## Map source
-
-The offline map uses [US Atlas](https://github.com/topojson/us-atlas), derived from the Census Bureau's 2017 cartographic boundaries in an Albers USA projection. Alaska and Hawaii use insets; Northeast states and DC also have enlarged click targets. Its license is included under assets. Map colors read the existing state snapshot; they do not represent real party affiliations. Maine/Nebraska split allocations remain available in State details.
-
-## v0.4 changes
-
-**Map:** The custom Swing component now explicitly clears its background on each paint. Its previous opaque flag did not clear pixels because the component had no painting delegate. Old hover outlines and resized map pixels could remain. Pixel-comparison tests now cover repeated hovering, resize and clipped repaints. Blue means your statewide lead, red means the opponent's; these are team colors, not modeled party identities. Gold marks selection.
-
-**Debates:** Prepare briefings, answer shuffled factual questions, choose confidence, hear an opponent claim, then clarify, concede or dispute it. Opponents can be wrong. Feedback cites official sources. Policy answers and revisions stay in a transcript and may be quoted in later debates, including subsequent campaigns. See DEBATE-DESIGN.md for timings and current limitations. The new protocol has no numerical electoral effect yet.
-
-**Office:** Cabinet lets you choose a department, appoint or nominate a candidate, secure support, confirm when eligible, and delegate an annual project. Removing an appointment requires confirmation. Public requests lets you acknowledge a request and track its delivery status. Midterms lets you complete listening and organizing visits when the term calendar permits. All share the existing monthly action allowance. Completed and unavailable actions explain their status; selectors and tabs persist while you work.
-
-**Clarity:** Policy now previews benefit, tradeoff, signing cost and delivery time, and shows the current bill's stage. Setup selectors use readable labels. Help scrolls within the laptop-sized dialog. Immediate notifications remain visible without opening the report screen. This release aims for clear, satisfying feedback rather than artificial rewards for repeated clicks.
-
-Run the included test.sh to reproduce model, desktop and new regression tests. Native Windows/macOS device testing remains outstanding.
+Native Windows/macOS scaling and assistive-technology testing remain outstanding. This is a fictional simulation, not a political forecast. See MODEL-NOTES.md and REALISM-AUDIT.md for the inherited model's limits, and BACKLOG.md for future work.
 
 
-## v0.5 layout fixes
+## v0.7.1 navigation
+Regular debates open in a dedicated scrollable window with persistent clock and large response buttons. Close or choose **Pause and return to campaign** to suspend the appearance; use **Decisions → Open / resume live debate** to return. Practice is offered only below the question mode in Settings and during debate preparation. Each mode has three fixed tutorial questions, separate from the live bank, plus a rehearsal-only planning exercise. Tutorial results never enter career history.
 
-Notifications reserve a fixed strip. Office/Policy controls wrap to available width; Policy uses separate initiative, bill and promise tabs. The presidency header adds existing GDP growth, unemployment, inflation and Congress figures. Hovering a state updates a permanent preview; eastern geographic shapes and enlarged callouts both work.
+Review buttons precede Begin debate. Feedback has one Continue button; closing has one Return to campaign button. Answer options remain shuffled so their position does not reveal correctness.
 
-BACKLOG.md now groups the full career, media, campaign, institutional and pressure-event roadmap with honest delivered/deferred status.
+**Fixed in v0.7.1:** the chosen seed controls opening support. Live factual answers, confidence, recovery and early departure affect persistent credibility, map projections and election-day ballots. Credibility also feeds the post-election reputation/trust record. These are authored game rules, not a real-election forecasting model.
+
+**News and money:** the headline strip sits below the stats, stays in place and opens recent headlines when clicked. It summarizes actual game events without consuming random draws. Campaign and office funds display a dollar symbol and thousands separators; office funds remain an abstract administrative resource.
+
+See Statistics for public credibility and its support effect. Fun trivia has half the credibility impact of Politics questions. Practice has none. Read SEED-AUDIT.md for the model details.
+
+Run `sh test-consequences.sh` for the focused v0.7.1 regression checks. The older full-suite script includes assumptions about the previous inline debate interface and has not been revalidated for this release. Saves use a new format; start a new career.

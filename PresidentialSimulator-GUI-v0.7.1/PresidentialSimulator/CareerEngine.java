@@ -187,6 +187,7 @@ public final class CareerEngine {
             consequences.add(String.format(java.util.Locale.ROOT,"Synthetic popular vote: you %,d / opponent %,d; share %.2f%%; turnout %.2f%%. Fictional electorate, not historical population data.",result.playerPopularVotes(),result.opponentPopularVotes(),result.popularShare(),100.0*(result.playerPopularVotes()+result.opponentPopularVotes())/result.eligibleVoters()));
             if (won) world.apply(WorldEffect.of(WorldMetric.INDEPENDENT_APPROVAL,Math.max(-5,Math.min(5,(result.popularShare()-50)*.5)),WorldMetric.CAPITAL,Math.max(-5,Math.min(5,result.popularShare()-50))),"Popular-vote mandate, separate from EV breadth",consequences);
         }
+        if(world!=null){double change=campaign.campaignCredibilityChange();world.apply(WorldEffect.of(WorldMetric.REPUTATION,change*.5,WorldMetric.TRUST,change*.5,WorldMetric.INDEPENDENT_APPROVAL,change*.15),"Campaign credibility carried into the post-election record",consequences);}
         if (world != null) world.election(won, tied, result == null ? null : result.getPlayerEV(), campaign.view().states().stream().mapToInt(s -> s.playerTasks().size()).sum(), consequences);
         elections.add(new CareerView.ElectionSummary(cycle, year, latestOutcome, forced,
             result == null ? null : result.getPlayerEV(), result == null ? null : result.getOpponentEV(), consequences));

@@ -38,6 +38,8 @@ public final class GameEngine {
     public void debateSettings(DebateSettings s){debateSettings=Objects.requireNonNull(s);}
     private final List<LiveDebate.Statement> debateMemory=new ArrayList<>();
     private int transcriptCursor;
+    private double inheritedCredibility=50;
+    public double campaignCredibilityChange(){return credibility()-inheritedCredibility;}
     private final List<DebateSession.Result> debateResults=new ArrayList<>();
     private double debateShare;
 
@@ -119,7 +121,9 @@ public final class GameEngine {
         return Math.max(50, amount);
     }
     private SyntheticElectorate.Vote tally(State s, boolean election) { return electorate.vote(s, player.getCompletedTasks(s.getName()), opponent.getCompletedTasks(s.getName()), election, supportSwing()); }
-    private double supportSwing() { return debateShare + modifiers.stream().filter(m -> m.kind()==CampaignEvent.Kind.SUPPORT && turn<=m.throughTurn()).mapToDouble(m -> (m.side()==CampaignEvent.Side.PLAYER ? 1 : m.side()==CampaignEvent.Side.OPPONENT ? -1 : 0)*m.amount()/100.0).sum(); }
+    public double credibility(){double value=50;for(var s:debateMemory)if(s.confidence().startsWith("REPUTATION:"))value+=Double.parseDouble(s.confidence().substring(11));return Math.max(0,Math.min(100,value));}
+    public double reputationSwing(){return (credibility()-50)*.16;}
+    private double supportSwing() { return debateShare + reputationSwing() + modifiers.stream().filter(m -> m.kind()==CampaignEvent.Kind.SUPPORT && turn<=m.throughTurn()).mapToDouble(m -> (m.side()==CampaignEvent.Side.PLAYER ? 1 : m.side()==CampaignEvent.Side.OPPONENT ? -1 : 0)*m.amount()/100.0).sum(); }
     private boolean controls(State s) {
         if (electorate != null) { var t=tally(s,turn == President.CAMPAIGN_TURNS && pending == null); return t.player()>t.opponent(); }
         boolean yours = player.getCompletedTasks(s.getName()).containsAll(s.getObjectives());
@@ -216,7 +220,7 @@ public final class GameEngine {
         if(liveDebate.complete()){liveDebate=null;pending=null;pendingTurn=0;pendingSeconds=0;return;}
         pending=new Pending(liveDebate.event(),null);pendingSeconds=liveDebate.seconds();pendingTurn=turn;
     }
-    void inheritDebateStatements(List<LiveDebate.Statement> previous){if(turn!=0)throw new IllegalStateException("Campaign already started");debateMemory.addAll(previous);}
+    void inheritDebateStatements(List<LiveDebate.Statement> previous){if(turn!=0)throw new IllegalStateException("Campaign already started");debateMemory.addAll(previous);inheritedCredibility=credibility();}
     public List<LiveDebate.Statement> debateStatements(){return List.copyOf(debateMemory);}
     private void finishDebateAnswer(int choice){
         var r=debate.answer(choice);
@@ -353,6 +357,8 @@ public final class GameEngine {
         List<String> active = modifiers.stream().filter(m -> turn + 1 <= m.throughTurn()).map(m -> m.source() + ": " + m.side()
             + " " + (advancedDebates && m.kind()==CampaignEvent.Kind.SUPPORT ? String.format(java.util.Locale.ROOT,"support %+.2f pp",m.amount()/100.0) : (m.task() == null ? "fundraising proceeds" : m.task() + " cost") + " " + signedMoney(m.amount()))
             + " (" + (m.throughTurn() - turn) + " turn(s) left)").toList();
+        active=new ArrayList<>(active);
+        active.add(String.format(java.util.Locale.ROOT,"Public credibility %.0f/100 · voter support %+.2f pp (persistent)",credibility(),reputationSwing()));
         return new GameView(seed, turn, President.CAMPAIGN_TURNS, player.getFunds(), opponent.getFunds(), ev, 538 - ev, complete,
             views, active, eventView, history, fundraising(CampaignEvent.Side.PLAYER, turn + 1), debateResults, debateShare);
     }

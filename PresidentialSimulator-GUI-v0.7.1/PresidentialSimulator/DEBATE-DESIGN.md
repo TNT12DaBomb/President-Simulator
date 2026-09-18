@@ -1,6 +1,8 @@
-# v0.7 implementation
+See SEED-AUDIT.md for current credibility and vote effects; 140 live cards and six isolated tutorial cards are now included.
 
-QuestionBank adds 23 Politics cards and 20 Fun cards to the original nine. DebateSettings is saved through validated OfficeCommands and copied to each new campaign; LiveDebate snapshots mode/pace at opening. Text and celebration preferences are presentation settings. PracticeDebatePanel owns a separate session, memory and clock. Live policy statements carry issue/approach identifiers immediately; legislation compares those records at proposal, signature and veto without adding numerical political evaluation.
+# Debate design — v0.7.1
+
+QuestionBank adds 23 Politics cards and 20 Fun cards to the original nine. DebateSettings is saved through validated OfficeCommands and copied to each new campaign; LiveDebate snapshots mode/pace at opening. Text and celebration preferences are presentation settings. PracticeDebatePanel owns a separate session, memory and clock. Live policy statements carry issue/approach identifiers immediately; legislation compares those records at proposal, signature and veto while factual accuracy also changes campaign credibility.
 
 Standard answer/recovery windows are now 30/20 seconds, relaxed 60/40, or untimed. Debates draw three knowledge questions and include one policy question in either mode. Correct/incorrect status describes a sourced factual answer only.
 

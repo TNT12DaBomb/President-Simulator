@@ -1,3 +1,7 @@
+# v0.7.1 — Consequences and news
+
+Opening map uses selected seed. Debate credibility affects projections and actual votes, survives saves and future races, and contributes to the post-election record. Early departure has a cost. Added a fixed news strip with a recent-headline reader, dollar formatting, and credibility in Statistics. Save format v5 requires a new career.
+
 # v0.7 — Debate windows and variety
 
 - Dedicated live debate window, controller-owned clock, pause/resume entry.

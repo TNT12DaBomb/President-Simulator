@@ -1,4 +1,4 @@
-PRESIDENTIAL SIMULATOR v0.7 — DEBATE WORKSHOP
+PRESIDENTIAL SIMULATOR v0.7.1 — DEBATE WORKSHOP
 
 1. Extract the ZIP. Java 17 or newer is required.
 2. Windows: double-click run-windows.bat. macOS/Linux: sh run.sh.
@@ -14,3 +14,7 @@ Menu > Settings changes pacing, text size, question mode and more.
 Menu > Save / Load keeps your progress.
 
 Older save formats are not supported in this version.
+
+NEW: seed changes starting support. Debate accuracy and recovery affect votes.
+Click the news line below funds to read recent headlines.
+Open Statistics for credibility and its current effect. Start a new save.

@@ -17,7 +17,8 @@ public final class LiveDebate implements PressureEvent {
     private Stage stage=Stage.PREP;
     private int round, revision, prep=6;
     private String answer="", confidence="", claim="", feedback="", position="";
-    private boolean challengeTrue, withdrawn;
+    private boolean challengeTrue, withdrawn, assessed;
+    private double recoveryAdjustment;
     private List<String> options=List.of();
 
     public LiveDebate(String topic,long seed,List<Statement> memory) {
@@ -51,7 +52,7 @@ public final class LiveDebate implements PressureEvent {
             case FEEDBACK->feedback+"\nSource: "+card().source();
             case POLICY->topic.equals("practice")?"Training exercise: your team has one rehearsal room. Commit to a quiet individual session or a shared group session. This tutorial creates no campaign promise.":"Governing question: "+policyIssue+". Which approach will you publicly commit to? This is a policy choice, not a trivia answer. Your commitment will appear beside presidential legislation and decisions will be compared with it.";
             case RECORD->recordPrompt();
-            case CLOSING->topic.equals("practice")?"Practice complete. Your answers and training choices stay in this rehearsal; nothing is copied to your career.":"Your transcript records answers, confidence, challenges and corrections. Read it in History.\n"+feedback+"\nYour policy statement: “"+position+"”\nThis debate protocol currently changes the conversation and statement record; your policy commitment will also be available at the presidential desk.";
+            case CLOSING->topic.equals("practice")?"Practice complete. Your answers and training choices stay in this rehearsal; nothing is copied to your career.":"Your transcript records answers, confidence, challenges and corrections. Read it in History.\n"+feedback+"\nYour policy statement: “"+position+"”\nYour factual accuracy and handling of challenges affect public credibility and votes. Policy commitments remain available at the presidential desk.";
             default->"";
         };
         return new CampaignEvent("debate_live_"+topic+"_"+revision,title,body,CampaignEvent.Category.OPPORTUNITY,List.of(),options.stream().map(x->new CampaignEvent.Option(x,List.of())).toList());
@@ -88,24 +89,34 @@ public final class LiveDebate implements PressureEvent {
         String choice=options.get(index);transcript.add(stage+": "+choice);
         switch(stage){
             case PREP->{if(choice.equals("Begin debate"))stage=Stage.ANSWER;else if(choice.startsWith("Review ")){String subject=choice.substring(7,choice.indexOf(" ·"));if(prep<2||!prepared.add(subject))throw new IllegalStateException("Review unavailable");prep-=2;}}
-            case ANSWER->{withdrawn=false;answer=choice;stage=Stage.CONFIDENCE;}
+            case ANSWER->{assessed=false;recoveryAdjustment=0;withdrawn=false;answer=choice;stage=Stage.CONFIDENCE;}
             case CONFIDENCE->{confidence=choice;memory.add(new Statement(topic,card().title(),answer,confidence));if(index==2){withdrawn=true;feedback="You withdrew the claim instead of asserting a fact. "+correction();stage=Stage.FEEDBACK;}else if(answer.equals(card().answer())&&random.nextBoolean()){feedback="The moderator confirms your answer; no challenge follows. "+correction();stage=Stage.FEEDBACK;}else{challengeTrue=style.equals("The Prosecutor")||(!style.equals("The Brawler")&&random.nextBoolean());claim=challengeTrue?card().answer():card().choices().stream().filter(x->!x.equals(card().answer())&&!x.equals(answer)).findFirst().orElseThrow();if(claim.equals(answer)){feedback="The opponent agrees. "+correction();stage=Stage.FEEDBACK;}else stage=Stage.CHALLENGE;}}
             case CHALLENGE->{if(index==0)transcript.add("MODERATOR: One interruption; state your objection, then let the source settle it.");stage=Stage.RECOVERY;}
-            case RECOVERY->{feedback=switch(index){case 0->"You stood by your original statement. ";case 1->"You requested a distinction between the two claims. ";case 2->challengeTrue?"You accepted an accurate correction. ":"You conceded to an inaccurate correction. ";case 3->challengeTrue?"Your counterattack disputed an accurate correction. ":"You correctly disputed the opponent's correction. ";default->"You requested verification before accepting the claim. ";};feedback+=(answer.equals(card().answer())?"Your original answer was accurate. ":"Your original answer was inaccurate. ")+(challengeTrue?"The opponent's correction was accurate. ":"The opponent's correction was inaccurate. ")+correction();stage=Stage.FEEDBACK;}
+            case RECOVERY->{recoveryAdjustment=index==0&&!factualCorrect()?-2:index==2?(challengeTrue?1:-1):index==3?(challengeTrue?-2:1):index==4?.5:0;feedback=switch(index){case 0->"You stood by your original statement. ";case 1->"You requested a distinction between the two claims. ";case 2->challengeTrue?"You accepted an accurate correction. ":"You conceded to an inaccurate correction. ";case 3->challengeTrue?"Your counterattack disputed an accurate correction. ":"You correctly disputed the opponent's correction. ";default->"You requested verification before accepting the claim. ";};feedback+=(answer.equals(card().answer())?"Your original answer was accurate. ":"Your original answer was inaccurate. ")+(challengeTrue?"The opponent's correction was accurate. ":"The opponent's correction was inaccurate. ")+correction();stage=Stage.FEEDBACK;}
             case FEEDBACK->{transcript.add("FACT CHECK: "+feedback+" Source: "+card().source());if(++round<cards.size())stage=Stage.ANSWER;else stage=Stage.POLICY;}
             case POLICY->{position=choice;for(var a:Policy.Approach.values())if(choice.equals(policyLabel(a)))promisedApproach=a;memory.add(new Statement(topic,"Policy: "+policyIssue,position,promisedApproach==null?"No commitment":"POLICY:"+policyIssue+":"+promisedApproach));stage=Stage.RECORD;}
             case RECORD->{if(index==1)memory.add(new Statement(topic,"Policy: "+policyIssue,"Revision promised; original commitment remains public","Revision pending"));feedback=index==0?"You reaffirmed the commitment.":index==1?"Your promise to revise the criteria is on the record.":"The clarification request remains unanswered.";transcript.add("RECORD: "+feedback);stage=Stage.CLOSING;}
             case CLOSING->stage=Stage.COMPLETE;
             default->throw new IllegalStateException("Debate complete");
         }
-        revision++;refreshOptions();
+        assessAnswer();revision++;refreshOptions();
+    }
+    private void assessAnswer(){
+        if(stage!=Stage.FEEDBACK||assessed)return;assessed=true;
+        if(topic.equals("practice"))return;
+        double change=answer.equals("No answer")?-2:withdrawn?-.5:factualCorrect()?2:confidence.equals("Answer confidently")?-4:-2;
+        change+=recoveryAdjustment;
+        // Fun trivia is weaker evidence of governing competence than civics/economics.
+        if(settings.mode()==DebateSettings.Mode.FUN)change*=.5;
+        memory.add(new Statement(topic,"Reputation outcome",card().title(),"REPUTATION:"+change));
+        feedback+=String.format(java.util.Locale.ROOT," Public credibility %+.1f; this affects support and carries into future races.",change);
     }
     private String correction(){return "Verified answer: "+card().answer()+(card().answer().endsWith(".")?" ":". ")+card().explanation();}
     public void timeout(){
         if(seconds()==0)throw new IllegalStateException("No active deadline");
         transcript.add("TIMEOUT: "+stage);
-        switch(stage){case CHALLENGE->stage=Stage.RECOVERY;case CONFIDENCE->{respond(1);return;}case ANSWER->{withdrawn=false;answer="No answer";memory.add(new Statement(topic,card().title(),answer,"Timed out"));feedback="No answer before the deadline. "+correction();stage=Stage.FEEDBACK;}case RECOVERY->{feedback="No recovery before the deadline. "+correction();stage=Stage.FEEDBACK;}case POLICY->{position="No commitment before the deadline";stage=Stage.RECORD;}case RECORD->{feedback="The moderator moved on without clarification.";stage=Stage.CLOSING;}default->throw new IllegalStateException();}
-        revision++;refreshOptions();
+        switch(stage){case CHALLENGE->stage=Stage.RECOVERY;case CONFIDENCE->{respond(1);return;}case ANSWER->{assessed=false;recoveryAdjustment=0;withdrawn=false;answer="No answer";memory.add(new Statement(topic,card().title(),answer,"Timed out"));feedback="No answer before the deadline. "+correction();stage=Stage.FEEDBACK;}case RECOVERY->{feedback="No recovery before the deadline. "+correction();stage=Stage.FEEDBACK;}case POLICY->{position="No commitment before the deadline";stage=Stage.RECORD;}case RECORD->{feedback="The moderator moved on without clarification.";stage=Stage.CLOSING;}default->throw new IllegalStateException();}
+        assessAnswer();revision++;refreshOptions();
     }
-    public void leave(){transcript.add("DEBATE ENDED: You left the appearance. Unanswered questions are not invented.");stage=Stage.COMPLETE;revision++;options=List.of();}
+    public void leave(){if(complete())return;if(!topic.equals("practice")&&stage!=Stage.CLOSING){memory.add(new Statement(topic,"Reputation outcome","Left a live debate early","REPUTATION:-3.0"));transcript.add("DEBATE EXIT: Leaving unanswered questions costs 3 credibility points.");}transcript.add("DEBATE ENDED: You left the appearance. Unanswered questions are not invented.");stage=Stage.COMPLETE;revision++;options=List.of();}
 }

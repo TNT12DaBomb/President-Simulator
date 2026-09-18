@@ -1,8 +1,21 @@
+# v0.7.1 completed
+
+- Seed-dependent opening map, deterministic same-seed replay.
+- Debate credibility affects projections and ballots; persists through saves and future races.
+- Campaign credibility carries into post-election trust, reputation and approval.
+- Early-departure consequences; practice remains isolated.
+- Compact news strip and recent-headline reader based on actual events.
+- Currency formatting and visible credibility in Statistics.
+
+Next: balance longer campaigns; integrate credibility with additional interviews and unscripted appearances; richer media outlet identities and news decay; native desktop focus testing; update older full-suite tests for the modal debate workflow. No unrelated large systems added in this bug-fix release.
+
+## Earlier backlog (historical milestone counts below)
+
 # v0.7 status
 
 Completed: dedicated live debate window; fixed isolated practice; topic rotation; expanded factual bank; clearer preparation order.
 
-Next validation: native Windows/macOS modal focus, screen-reader announcement and keyboard navigation; migrate older inline-interface regression tests. More content: additional pop-culture franchises and authored follow-up questions. Simulation issues remain documented in SEED-AUDIT.md.
+Next validation: native Windows/macOS modal focus, screen-reader announcement and keyboard navigation; migrate older inline-interface regression tests. More content: additional pop-culture franchises and authored follow-up questions. Seed and debate consequence fixes are documented in SEED-AUDIT.md.
 
 # Development backlog — v0.6
 

@@ -6,13 +6,14 @@ public final class SyntheticElectorate {
         public double share(){return 100.0*player/(player+opponent);}
         public double turnout(){return 100.0*(player+opponent)/eligible;}
     }
+    private static long mix(long x){x=(x^(x>>>30))*0xbf58476d1ce4e5b9L;x=(x^(x>>>27))*0x94d049bb133111ebL;return x^(x>>>31);}
     private final long seed;private final double recordSwing;private final President.Difficulty difficulty;
     public SyntheticElectorate(long seed,double recordSwing,President.Difficulty difficulty){this.seed=seed;this.recordSwing=Math.max(-6,Math.min(6,recordSwing));this.difficulty=difficulty;}
     public Vote vote(State state,Set<State.Task> yours,Set<State.Task> theirs,boolean election){
         return vote(state,yours,theirs,election,0);
     }
     public Vote vote(State state,Set<State.Task> yours,Set<State.Task> theirs,boolean election,double campaignSwing){
-        Random geography=new Random(0x715a2L ^ state.getName().hashCode()); // stable fictional geography across career cycles
+        Random geography=new Random(mix(seed ^ (state.getName().hashCode()*0x9E3779B97F4A7C15L))); // reproducible campaign geography
         double lean=(geography.nextDouble()-.5)*16;
         double local=(yours.size()-theirs.size())*2.8;
         double national=election?(new Random(seed^0x987aL).nextDouble()-.5)*4:0;

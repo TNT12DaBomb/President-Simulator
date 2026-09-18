@@ -9,7 +9,7 @@ import java.util.Properties;
 
 /** Current playtest saves only; no older-format import or migration. */
 public final class CareerSave {
-    public static final String FORMAT = "presidency-debate-windows-v4";
+    public static final String FORMAT = "presidency-consequences-v5";
     private CareerSave() { }
     public static void write(CareerEngine engine, Path destination) throws IOException {
         write(engine, destination, null);

@@ -1,0 +1,11 @@
+PRESIDENTIAL SIMULATOR v0.10.3
+
+Extract the ZIP. Install Java 17+. Launch run-windows.bat or sh run.sh.
+Start a new career: older save formats are unsupported in this release.
+
+The headquarters or desk is home. The bottom Return control closes a workspace.
+Menu contains saves, Settings, How to play and exit. Escape opens/resumes Menu.
+Fullscreen is available in Settings on supported displays.
+Two presidential actions automatically complete the month after pending decisions resolve.
+
+Developer password: devtools.

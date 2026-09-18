@@ -1,0 +1,23 @@
+PRESIDENTIAL SIMULATOR — DEBATE & INTERFACE EDITION v0.5
+
+1. Extract the entire ZIP.
+2. Install Java 17 or newer if it is not already installed.
+3. Windows: double-click run-windows.bat.
+   Linux/macOS: run sh run.sh, or open the JAR with Java.
+4. Click Start a new career. How to play is available in the left sidebar.
+
+Menu > Save / Load provides manual slots and autosave recovery.
+Close the window and choose Save and exit to keep your progress.
+
+No extra GUI libraries are needed. See README.md for limitations and controls.
+
+Click Map, hover a state, then click it to choose campaign actions.
+New decisions open automatically. Errors appear at the top of the window.
+
+After inauguration, open Office for Cabinet, Public requests and Midterms.
+Debate responses move between positions. Read their text and costs before choosing.
+Blue = your statewide lead; red = opponent; gold = selected state.
+
+Debates: preparation > answer > confidence > challenge > recovery > fact check.
+Your statements remain in History. Menus pause clocks; Settings can disable them.
+This release starts a new save format. Previous-version saves are not supported.

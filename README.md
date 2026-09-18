@@ -1,63 +1,57 @@
-# Presidential Simulator v0.7.1 — Debate Windows
+# Presidential Simulator v0.10.3 — Physical workspaces
 
-Extract the ZIP and install Java 17 or newer. On Windows, double-click `run-windows.bat`. On macOS/Linux, run `sh run.sh`. The bundled JAR opens a desktop window. No extra GUI libraries or online account are needed.
+Extract the ZIP. Java 17+ is required. Windows: double-click `run-windows.bat`. macOS/Linux: `sh run.sh`.
 
-## Your campaign
+## Navigation
 
-**You are BLUE. Your opponent is RED.** The setup screen, campaign dashboard, persistent header and map identify your team. Blue/red are the current game's team colors; gold marks the selected state. Select a red state to challenge the opponent there, or strengthen work in a blue state. Hover previews and enlarged eastern callouts remain available.
+The campaign headquarters has a wall board above a working desk, with seven objects: phone, map, fundraising ledger, planner, policy binder, newspaper and reports. The presidential desk has six: secure phone, legislation folio, cabinet book, planner, newspaper and reports. Objects use individual normalized positions, sizes, notification keys and renderer hooks; they are no longer arranged as a uniform grid. No laptop or sidebar remains.
 
-## Choose a question mode
+Opening a document replaces the desk. The aligned bottom **Return** control returns to it. The small bottom **Menu** opens saves, Settings, How to play and exit; Escape opens/resumes the menu. Headlines appear above neutral stat tiles. Team-color explanations have been removed from the dock; color distinctions remain on the map.
 
-New career setup offers **Politics** (52 questions) or **Fun** (88 questions). The live bank contains 140 cards. Each appearance selects three distinct topics, preferring unseen questions. Fun now includes literature, music, computing, chemistry, genetics, mathematics, Earth science, space and Star Wars.
+Campaign debate settings live on a policy-binder tab. Reports contain statistics and links to the career archive and activity records. The cabinet book contains appointments, public requests and midterm sections. The planner contains presidential actions and upcoming deliveries. Legislation and promises share the folio.
 
-Both modes include a separate governing-policy question after the knowledge rounds. Policy preferences are not marked correct or incorrect. The public statement is recorded immediately and follows you into office, even if you leave the debate before the clarification round.
+Common form choices now use direct selection buttons: policy, administration, debate setup, campaign color and save actions. The state picker is now a searchable paper index. Developer actions also use direct selections. Long forms and records can still scroll.
 
-## Preparation and team practice
+## Monthly progression and saves
 
-Each debate starts with **6 briefing slots**. Reviewing one topic costs **2 slots**, not campaign cash or a campaign turn. Purchased notes appear before/during the relevant questions. Slots reset at the next debate; repeated note reading is free.
+After the second presidential action, the month advances automatically. A pending decision must be resolved before that rollover. Reading documents and changing settings do not spend actions. The legacy terminal still permits explicitly ending a month early.
 
-**Practice with your team** is available below the question mode in Settings and during debate preparation. It runs the full debate sequence with a separate session and statement record. It spends no career resources and creates no public commitments. Practice defaults to untimed; enable rehearsal clocks if desired.
+**This version requires a new career.** Saves use `presidency-auto-month-v6`; older manual-month command histories are intentionally rejected because replaying them with automatic progression could change their timelines. Save files live in `~/PresidentialSimulator/saves`. Activity reports remain until dismissed.
 
-## Timers, reading and feedback
+## Display
 
-| Stage | Standard | Relaxed |
-| --- | --- | --- |
-| Knowledge answer | 30 seconds | 60 seconds |
-| Confidence | 15 seconds | 30 seconds |
-| Opponent delivery | 5 seconds | 10 seconds |
-| Recovery | 20 seconds | 40 seconds |
-| Policy / record | 40 seconds | 80 seconds |
+Settings includes a Fullscreen checkbox when the native display supports it. Switching back restores the previous window bounds/state. It preserves the same frame and listeners. Display mode is session-only. Native fullscreen and high-DPI behavior require testing on your machine; they cannot be verified by headless rendering.
 
-Preparation, source feedback and debriefs are untimed. Untimed mode removes every debate deadline. Dialogs, file operations and switching windows pause the live career clock.
+Developer password: **devtools**. Seed overrides remain developer-only; normal new careers use random seeds.
 
-Correct factual answers receive a green **Well answered** banner, whether challenged or accepted without a challenge. Incorrect answers get a distinct correction; withdrawing a claim gets neutral source review. Feedback separates your original answer from the opponent's claim, which may itself be wrong. It does not score the worth of a candidate or a political position.
+## Development
 
-## Settings
+Build: `sh build.sh`. UI checks: `sh test-hubs.sh`. Calendar/save checks: `sh test-month-flow.sh`.
 
-Menu → Settings includes question mode, Standard/Relaxed/Untimed pace, the master live-clock switch, debate text size (16–24, default 18), correct-answer celebrations and presidency event frequency. Mode and pace changes apply to the **next** debate; text and feedback style update immediately. Turning off the master clock pauses a current live response. Preferences are included in career saves. Before starting a career, settings become the defaults for the next setup in that app session.
+All 13 main desk destinations, pause/resume, return navigation and three window sizes pass headless checks. The calendar test checks action counts, month rollover and save replay only. Existing gameplay calculations remain unchanged; the behavior change is turn scheduling.
 
-## Governing continuity
+Future work: native display/accessibility testing, optional artwork packs, selectable cosmetic themes, searchable state directory, and migration of older tests that assume separate manual month endings.
 
-Policy → Promises lists debate commitments. In office, **Introduce promised initiative** opens the matching proposal using the normal action allowance. The initiative preview also shows relevant prior statements. Proposals, signatures and vetoes append a comparison with those statements to History. A proposal is not treated as a law already delivered. Numerical reputation/media effects are not added by this release.
+## v0.10.3 interface refinements
 
-## Saving and building
+Wall pins, a corkboard, varied paper sizes and a desk ledge distinguish headquarters from the executive desk. The map preview uses the existing state outlines; the interactive map has paper borders and a fold line. Geometry and interaction logic are unchanged.
 
-Menu → Save / Load offers slots, quicksave, autosave and file opening. Phase transitions autosave; use manual save or Save and exit for later actions. Saves live in `PresidentialSimulator/saves` under your home directory. Current format: `presidency-debate-settings-v3`. Old-format saves are intentionally unsupported; their files are not modified by a failed load.
+The bottom control is aligned with stats and changes between Menu, Resume and Return. Default button focus painting is replaced with a keyboard focus accent. Pre-game menus hide career-only links and the dock hides news/stat previews.
 
-Build source with `sh build.sh` or `build-windows.bat` using JDK 17+. Run focused debate tests with `sh test-debates.sh`. Terminal access remains `java -jar presidential-simulator.jar --terminal`; the expanded setup/settings and team-practice screens are desktop features.
+Activity displays one retained report at a time. History has paged career/campaign records. Statistics uses phase-specific tabs. Newspaper pages include full current briefings, selected recent dispatches and scheduling context from existing records, with background flavor kept separate. It does not invent additional reporting when the game has no supporting detail.
 
-Native Windows/macOS scaling and assistive-technology testing remain outstanding. This is a fictional simulation, not a political forecast. See MODEL-NOTES.md and REALISM-AUDIT.md for the inherited model's limits, and BACKLOG.md for future work.
+Automatic monthly progression and the v6 save format are unchanged from v0.10.0.
 
+## v0.10.3 consistency pass
 
-## v0.7.1 navigation
-Regular debates open in a dedicated scrollable window with persistent clock and large response buttons. Close or choose **Pause and return to campaign** to suspend the appearance; use **Decisions → Open / resume live debate** to return. Practice is offered only below the question mode in Settings and during debate preparation. Each mode has three fixed tutorial questions, separate from the live bank, plus a rehearsal-only planning exercise. Tutorial results never enter career history.
+Live and practice debates share warm paper and green controls. Changed stat tiles fade through muted brass back to their original dock color. The remaining developer and legacy view dropdowns now use direct selections. The Menu control has additional width and a larger gap from the stats.
 
-Review buttons precede Begin debate. Feedback has one Continue button; closing has one Return to campaign button. Answer options remain shuffled so their position does not reveal correctness.
+The start screen has no default action button, redundant footer title or settings-location instruction. Wall pins are painted within their paper assets; wall papers use shallower shadows, while folders remain entirely below the desk ledge. No gameplay or save-format changes.
 
-**Fixed in v0.7.1:** the chosen seed controls opening support. Live factual answers, confidence, recovery and early departure affect persistent credibility, map projections and election-day ballots. Credibility also feeds the post-election reputation/trust record. These are authored game rules, not a real-election forecasting model.
+## v0.10.3 pending decisions and presentation
 
-**News and money:** the headline strip sits below the stats, stays in place and opens recent headlines when clicked. It summarizes actual game events without consuming random draws. Campaign and office funds display a dollar symbol and thousands separators; office funds remain an abstract administrative resource.
+Pending decisions no longer disable ordinary desktop actions. Live debates use a nonmodal window; returning to the workspace retains the normal deadline. Spending a campaign turn can reach a decision's in-game deadline, so multitasking is not an indefinite pause. The phone shows a decision badge and caption until the pending response resolves. Existing action budgets and phase boundaries still apply.
 
-See Statistics for public credibility and its support effect. Fun trivia has half the credibility impact of Politics questions. Practice has none. Read SEED-AUDIT.md for the model details.
+The map uses the same paper palette as its surrounding workspace, includes a current-news clipping with a Newspaper link, and retains a searchable state index (no dropdown). Live and practice debates share a leather border and paper background. Stat highlights now expire correctly instead of replaying on later refreshes.
 
-Run `sh test-consequences.sh` for the focused v0.7.1 regression checks. The older full-suite script includes assumptions about the previous inline debate interface and has not been revalidated for this release. Saves use a new format; start a new career.
+Save format remains v6.
